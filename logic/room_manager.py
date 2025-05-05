@@ -24,7 +24,10 @@ def create_room():
     while True:
         code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
         if code not in rooms:
-            rooms[code] = {"players": []}
+            rooms[code] = {
+                "players": [],
+                "status": "waiting"  # 게임 시작 전 기본 상태
+            }
             save_rooms(rooms)
             return code
 
@@ -46,3 +49,15 @@ def join_room(code, name):
 def get_players(code):
     rooms = load_rooms()
     return rooms.get(code, {}).get("players", [])
+
+# 🚀 게임 시작 상태 설정 함수
+def start_game(code):
+    rooms = load_rooms()
+    if code in rooms:
+        rooms[code]["status"] = "started"
+        save_rooms(rooms)
+
+# 🔍 게임 시작 여부 확인 함수
+def is_game_started(code):
+    rooms = load_rooms()
+    return rooms.get(code, {}).get("status") == "started"
