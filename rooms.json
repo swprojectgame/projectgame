@@ -234,5 +234,149 @@
       "gngngn"
     ],
     "status": "started"
+  },
+  "FGKF": {
+    "players": [
+      "\ub784\ub784\ub77c",
+      "snsnsn"
+    ],
+    "status": "started"
+  },
+  "9L39": {
+    "players": {
+      "\u314e\u314e": {
+        "submitted": false,
+        "scenario": "",
+        "situation": ""
+      }
+    },
+    "status": "waiting",
+    "situation": "",
+    "result": ""
+  },
+  "805B": {
+    "players": {
+      "\u3147\u3134\u3147\u3134": {
+        "submitted": false,
+        "scenario": "",
+        "situation": ""
+      }
+    },
+    "status": "started",
+    "situation": "",
+    "result": ""
+  },
+  "2BM6": {
+    "players": {
+      "1\ube60": {
+        "submitted": false,
+        "scenario": "",
+        "situation": ""
+      }
+    },
+    "status": "started",
+    "situation": "",
+    "result": ""
+  },
+  "BB3L": {
+    "players": {
+      "\u3147\u3134": {
+        "submitted": false,
+        "scenario": "",
+        "situation": ""
+      }
+    },
+    "status": "started",
+    "situation": "",
+    "result": ""
+  },
+  "FG7R": {
+    "players": {
+      "\u3147\u3134": {
+        "submitted": true,
+        "scenario": "\ub780\ub780\ub8e8",
+        "situation": ""
+      }
+    },
+    "status": "started",
+    "situation": "",
+    "result": ""
+  },
+  "OU1W": {
+    "players": {
+      "\u3147\u3134": {
+        "submitted": true,
+        "scenario": "\u3147\u3134",
+        "situation": ""
+      }
+    },
+    "status": "started",
+    "situation": "",
+    "result": ""
+  },
+  "ELM0": {
+    "players": {
+      "\u3147\u3134": {
+        "submitted": true,
+        "scenario": "\u3147\u3134",
+        "situation": "\ube44\ud589\uae30\uc5d0\uc11c \ub099\ud558\uc0b0 \uc5c6\uc774 \ub5a8\uc5b4\uc84c\uc2b5\ub2c8\ub2e4."
+      }
+    },
+    "status": "started",
+    "situation": "\ube44\ud589\uae30\uc5d0\uc11c \ub099\ud558\uc0b0 \uc5c6\uc774 \ub5a8\uc5b4\uc84c\uc2b5\ub2c8\ub2e4.",
+    "result": "\uc624\ub958: \n\nYou tried to access openai.ChatCompletion, but this is no longer supported in openai>=1.0.0 - see the README at https://github.com/openai/openai-python for the API.\n\nYou can run `openai migrate` to automatically upgrade your codebase to use the 1.0.0 interface. \n\nAlternatively, you can pin your installation to the old version, e.g. `pip install openai==0.28`\n\nA detailed migration guide is available here: https://github.com/openai/openai-python/discussions/742\n"
+  },
+  "PZKX": {
+    "players": {
+      "\u3139\u3139\u3139": {
+        "submitted": false,
+        "scenario": "",
+        "situation": "\ub85c\ubd07\uc774 \ubc18\ub780\uc744 \uc77c\uc73c\ucf30\uc2b5\ub2c8\ub2e4."
+      },
+      "dsdsd": {
+        "submitted": true,
+        "scenario": "gg",
+        "situation": "\ub85c\ubd07\uc774 \ubc18\ub780\uc744 \uc77c\uc73c\ucf30\uc2b5\ub2c8\ub2e4."
+      }
+    },
+    "status": "started",
+    "situation": "\ub85c\ubd07\uc774 \ubc18\ub780\uc744 \uc77c\uc73c\ucf30\uc2b5\ub2c8\ub2e4.",
+    "result": ""
+  },
+  "J39R": {
+    "players": {
+      "\u3147\u3134": {
+        "submitted": false,
+        "scenario": "",
+        "situation": "\uc6b0\uc8fc\uc120 \uc0b0\uc18c\uac00 \uace0\uac08\ub418\uace0 \uc788\uc2b5\ub2c8\ub2e4."
+      },
+      "afsaf": {
+        "submitted": true,
+        "scenario": "\ub300\ubc15!!",
+        "situation": "\uc6b0\uc8fc\uc120 \uc0b0\uc18c\uac00 \uace0\uac08\ub418\uace0 \uc788\uc2b5\ub2c8\ub2e4."
+      }
+    },
+    "status": "started",
+    "situation": "\uc6b0\uc8fc\uc120 \uc0b0\uc18c\uac00 \uace0\uac08\ub418\uace0 \uc788\uc2b5\ub2c8\ub2e4.",
+    "result": ""
+  },
+  "0LY2": {
+    "players": {
+      "\uc548\ub155": {
+        "submitted": true,
+        "scenario": "\ud760",
+        "situation": ""
+      },
+      "\ubc18\uac00\uc6cc": {
+        "submitted": true,
+        "scenario": "\uc5b4\uca4c\uc9c0",
+        "situation": ""
+      }
+    },
+    "status": "started",
+    "situation": "",
+    "result": "\ud14c\uc2a4\ud2b8\uc6a9 \uacb0\uacfc\uc785\ub2c8\ub2e4.\n- \uc81c\uc784\uc2a4: \uc0dd\uc874. \uce68\ucc29\ud558\uac8c \ub300\ucc98\ud588\ub2e4!\n- \ubbfc\uc9c0: \uc0ac\ub9dd. AI\ub294 \uadf8\ub140\ub97c \uc678\uba74\ud588\ub2e4...\n- \ud0dc\ud6c8: \uc0dd\uc874. \uae43\ud138 \ud55c \uc7a5\uc73c\ub85c \uae30\uc801\uc744 \ub9cc\ub4e4\uc5c8\ub2e4!\n",
+    "max_round": 1,
+    "current_round": 1
   }
 }
