@@ -27,6 +27,3 @@ if "page" not in st.session_state:
 
 elif st.session_state.page == "lobby":
     lobby.start()
-
-
-
