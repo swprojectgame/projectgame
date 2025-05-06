@@ -337,20 +337,29 @@ def show_game_rules_slides():
                     <div style="position: relative; display: inline-block; margin: 0 5px;">
                         <div style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; position: relative; overflow: hidden;">
                             <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: {progress_percentage}%; background-color: {water_color}; 
-                                transition: height 0.2s linear; box-shadow: 0 0 5px rgba(30, 144, 255, 0.5) inset; z-index: 1;">
+                                transition: height 0.3s ease-out; box-shadow: 0 0 5px rgba(30, 144, 255, 0.5) inset; z-index: 1;">
                             </div>
                             <!-- 물결 효과 -->
-                            <div style="position: absolute; bottom: {wave_bottom}%; left: -5px; width: 130%; height: 6px; 
+                            <div style="position: absolute; bottom: {wave_bottom}%; left: -5px; width: 130%; height: 3px; 
+                                background-color: rgba(255, 255, 255, 0.4); border-radius: 50%; z-index: 2;
+                                animation: wave1 1.5s infinite ease-in-out;">
+                            </div>
+                            <div style="position: absolute; bottom: {wave_bottom-2 if wave_bottom > 2 else 0}%; left: -5px; width: 130%; height: 2px; 
                                 background-color: rgba(255, 255, 255, 0.3); border-radius: 50%; z-index: 2;
-                                animation: wave 2s infinite linear;">
+                                animation: wave2 1.8s infinite ease-in-out;">
                             </div>
                         </div>
                     </div>
                     <style>
-                    @keyframes wave {{
+                    @keyframes wave1 {{
                         0% {{ transform: translateX(-5px); }}
                         50% {{ transform: translateX(5px); }}
                         100% {{ transform: translateX(-5px); }}
+                    }}
+                    @keyframes wave2 {{
+                        0% {{ transform: translateX(5px); }}
+                        50% {{ transform: translateX(-5px); }}
+                        100% {{ transform: translateX(5px); }}
                     }}
                     </style>
                     """
