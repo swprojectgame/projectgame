@@ -11,7 +11,8 @@ import streamlit as st
     ##여기서 작업하세용##
 
 #logic
-
+from logic.url_router import handle_url_params
+handle_url_params()
     ##여기서 작업하세용##
 
 #guitar
@@ -35,5 +36,3 @@ elif st.session_state.page == "prompf":
     prompf.a4()
 elif st.session_state.page == "result":
     result.a5()
-
-
