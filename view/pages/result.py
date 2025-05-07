@@ -17,23 +17,24 @@ def a5():
     if not result:
         result = generate_result(code)
 
-    # 결과 표시
-    st.text_area("🧠 결과", result, height=300)
-
-    # 🔁 현재 라운드 / 최대 라운드 확인
+    # 🔢 현재 라운드 / 총 라운드 수
     current_round = rooms[code].get("current_round", 1)
-    max_round = rooms[code].get("max_round", 3)
+    max_round = rooms[code].get("total_rounds", 3)
 
     st.markdown(f"**라운드 {current_round} / {max_round}**")
 
-    # ✅ 라운드 종료 조건
+    # ✅ 결과 표시
+    st.text_area("🧠 결과", result, height=300)
+
+    # ✅ 마지막 라운드일 경우: 종료 안내 및 버튼 제공
     if current_round >= max_round:
         st.success("🎉 모든 라운드가 종료되었습니다!")
-        st.session_state.page = "end"  # 🔚 종료 페이지로 이동
-        st.rerun()
+        if st.button("🔚 게임 종료"):
+            st.session_state.page = "end"
+            st.rerun()
     else:
+        # ✅ 다음 라운드로 진행
         if st.button("다음 라운드"):
-            # 새 상황 배정 + 상태 초기화 + 라운드 수 증가
             assign_situation(code, get_random_situation())
             reset_submissions(code)
             rooms[code]["current_round"] = current_round + 1

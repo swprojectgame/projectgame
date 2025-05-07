@@ -10,7 +10,6 @@ def a1():
         st.info(f"이미 '{st.session_state.room_code}' 방에 입장 중입니다.")
         return
 
-    # ✅ 방 생성 성공 메시지 출력
     if "create_message" in st.session_state:
         st.success(st.session_state.create_message)
         del st.session_state.create_message
@@ -30,10 +29,9 @@ def a1():
 
     st.markdown("---")
 
-    # ✅ 방 만들기 모드
     if st.session_state.mode == "create":
         if nickname:
-            room_code = create_room()
+            room_code = create_room()  # ✅ 라운드 수 전달하지 않음
             st.session_state.create_message = f"✅ 방이 생성되었습니다! 코드: {room_code}"
             st.session_state.room_code = room_code
 
@@ -44,7 +42,6 @@ def a1():
         else:
             st.warning("닉네임을 먼저 입력하세요.")
 
-    # ✅ 방 참여 모드
     elif st.session_state.mode == "join":
         code_input = st.text_input("참여할 방 코드를 입력하세요:", key="room_code_input")
         if nickname and code_input:

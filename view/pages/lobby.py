@@ -30,15 +30,15 @@ def a2():
         st.markdown(f"- {p}")
     st.markdown("---")
 
-    # ✅ 방장일 경우 라운드 수 설정 가능
+    # ✅ 방장만 라운드 수 설정
     if players and players[0] == player_name:
-        max_round = st.selectbox("🎯 진행할 라운드 수 (1~5)", range(1, 6), index=2, key="round_select")
+        rounds = st.number_input("진행할 라운드 수를 선택하세요", min_value=1, max_value=10, value=3, step=1)
 
         if st.button("🚀 게임 시작"):
             rooms = load_rooms()
             rooms[room_code]["status"] = "started"
-            rooms[room_code]["max_round"] = max_round
             rooms[room_code]["current_round"] = 1
+            rooms[room_code]["total_rounds"] = rounds  # ✅ 여기서 설정
             save_rooms(rooms)
 
             st.session_state.page = "scenario"

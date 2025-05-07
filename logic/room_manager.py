@@ -18,19 +18,23 @@ def save_rooms(rooms):
         json.dump(rooms, f, indent=2)
 
 # 🏗 방 생성 (중복 없는 랜덤 코드)
-def create_room():
+def create_room(rounds=3):  # 기본값으로 3라운드
     rooms = load_rooms()
     while True:
         code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
         if code not in rooms:
             rooms[code] = {
-                "players": {},          # 각 플레이어 정보 (딕셔너리)
-                "status": "waiting",    # 대기 상태
-                "situation": "",        # 현재 라운드 상황 (방 전체 기준)
-                "result": ""            # GPT 결과 저장용
+                "players": {},
+                "status": "waiting",
+                "situation": "",
+                "result": "",
+                "current_round": 1,
+                "total_rounds": rounds  # ✅ total_rounds는 이후 lobby에서 수정됨
             }
             save_rooms(rooms)
             return code
+
+
 
 # 🚪 플레이어가 방에 입장
 def join_room(code, name):
