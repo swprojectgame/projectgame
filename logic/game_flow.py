@@ -68,4 +68,4 @@ def reset_submissions(code):
             p["submitted"] = False
             p["scenario"] = ""
         rooms[code]["result"] = ""
-        save_rooms(rooms) 
+        save_rooms(rooms)

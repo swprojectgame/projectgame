@@ -16,4 +16,16 @@ SITUATIONS = [
 
 # ✅ 무작위로 상황 하나 반환
 def get_random_situation():
-    return random.choice(SITUATIONS) 
+    return random.choice(SITUATIONS)
+
+def is_game_over(code):
+    # 🔹 rooms.json에서 모든 방 정보를 불러온다
+    rooms = load_rooms()
+    
+    # 🔹 전달받은 방 코드(code)가 rooms 안에 실제로 존재하면
+    if code in rooms:
+        # ✅ 현재 라운드가 총 라운드보다 크면 게임이 끝난 것이므로 True 반환
+        return rooms[code]["current_round"] > rooms[code]["total_rounds"]
+    
+    # 🔹 만약 방 코드가 존재하지 않으면 게임이 끝났다고 간주 (True 반환)
+    return True
