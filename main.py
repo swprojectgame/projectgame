@@ -11,8 +11,7 @@ import streamlit as st
     ##여기서 작업하세용##
 
 #logic
-from logic.url_router import handle_url_params
-handle_url_params()
+
     ##여기서 작업하세용##
 
 #guitar
@@ -36,3 +35,14 @@ elif st.session_state.page == "prompf":
     prompf.a4()
 elif st.session_state.page == "result":
     result.a5()
+    
+elif st.session_state.page == "fx1_transition":
+    # 트랜지션 화면 효과 (예: 로딩 애니메이션, gif, 시간 지연 등)
+    from view.ui.bg import bg
+    import time
+
+    bg("https://media.giphy.com/media/xTkcEQACH24SMPxIQg/giphy.gif")  # 트랜지션 gif 예시
+    st.markdown("## 이동 중입니다...")
+    time.sleep(2)  # 2초 대기 후 시나리오 페이지로 전환
+    st.session_state.page = "scenario"
+    st.rerun()
