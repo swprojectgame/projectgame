@@ -1,13 +1,23 @@
 # 🔁 GPT API 없이 테스트 가능한 더미 버전
 
+import os
+import openai
+
 def generate_response(prompt):
-    # 테스트용 고정 응답 반환
-    return (
-        "테스트용 결과입니다.\n"
-        "- 제임스: 생존. 침착하게 대처했다!\n"
-        "- 민지: 사망. AI는 그녀를 외면했다...\n"
-        "- 태훈: 생존. 깃털 한 장으로 기적을 만들었다!\n"
-    )
+    try:
+        openai.api_key = os.getenv("OPENAI_API_KEY")
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "당신은 공정하고 창의적인 죽음의 심판관입니다."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+            max_tokens=500
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"AI 응답 생성 중 오류 발생: {str(e)}"
 
 # ✅ 실제 API 호출용 코드 (나중에 활성화하면 됨)
 """
