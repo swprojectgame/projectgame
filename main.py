@@ -2,7 +2,7 @@ from view.ui.hide_bar import hide_bar_ui
 
 from view.ui.bg import bg
 
-from view.pages import start,lobby,scenario,prompf,result
+from view.pages import start,lobby,scenario,prompf,result,end
 
 
 import streamlit as st
@@ -36,3 +36,5 @@ elif st.session_state.page == "prompf":
     prompf.a4()
 elif st.session_state.page == "result":
     result.a5()
+elif st.session_state.page == "end":
+    end.a6()
