@@ -3,6 +3,7 @@ from logic.room_manager import (
     save_rooms
 )
 from api.ai_api import generate_response  # 🔁 GPT API 호출 함수 사용
+import re
 
 # ✅ 유저가 행동을 제출
 def submit_scenario(code, name, scenario):
@@ -52,6 +53,10 @@ def generate_result(code):
         result_text = f"[GPT 오류] {e}"
 
     rooms[code]["result"] = result_text
+    
+    # ✅ 결과 파싱하여 생존 여부 기록
+    update_survival_records(code, result_text)
+    
     save_rooms(rooms)
     return result_text
 
@@ -68,4 +73,42 @@ def reset_submissions(code):
             p["submitted"] = False
             p["scenario"] = ""
         rooms[code]["result"] = ""
-        save_rooms(rooms) 
+        save_rooms(rooms)
+
+# ✅ 결과 텍스트를 파싱하여 생존 여부 판단 및 기록
+def update_survival_records(code, result_text):
+    rooms = load_rooms()
+    if code not in rooms:
+        return
+    
+    # 플레이어 목록 가져오기
+    players = list(rooms[code]["players"].keys())
+    
+    # 생존 여부 확인을 위한 정규식 패턴
+    for player_name in players:
+        # 정규식 패턴: "- 플레이어명: 생존." 또는 "- 플레이어명 : 생존." 등의 형태 체크
+        pattern = r"[-\*]\s*" + re.escape(player_name) + r"\s*[:：]\s*(생존|survived|Survived)"
+        # AI가 생성한 결과에서 플레이어 이름 앞뒤로 다른 문자가 붙어 있을 수 있어 부분 매칭으로 검색
+        alternative_pattern = re.compile(r"[-\*]\s*(.*" + re.escape(player_name) + r".*?)[:：]\s*(생존|survived|Survived)", re.IGNORECASE)
+        
+        # 두 가지 패턴 중 하나라도 매치되면 생존으로 판정
+        direct_match = bool(re.search(pattern, result_text, re.IGNORECASE))
+        alternative_match = bool(alternative_pattern.search(result_text))
+        
+        survived = direct_match or alternative_match
+        
+        # 생존 횟수 초기화 및 업데이트
+        if "survived_count" not in rooms[code]["players"][player_name]:
+            rooms[code]["players"][player_name]["survived_count"] = 0
+        
+        if survived:
+            rooms[code]["players"][player_name]["survived_count"] += 1
+    
+    save_rooms(rooms)
+
+# ✅ 생존 횟수 조회
+def get_survival_count(code, player_name):
+    rooms = load_rooms()
+    if code in rooms and player_name in rooms[code]["players"]:
+        return rooms[code]["players"][player_name].get("survived_count", 0)
+    return 0 
