@@ -1,5 +1,5 @@
 import streamlit as st
-from logic.room_manager import get_players, start_game, is_game_started
+from logic.room_manager import get_players, start_game, is_game_started, load_rooms, save_rooms
 from view.ui.bg import bg  # type: ignore
 from streamlit_autorefresh import st_autorefresh
 import time
@@ -42,6 +42,7 @@ TRANSLATIONS = {
         "short": "짧게",
         "medium": "보통",
         "long": "길게",
+        "select_rounds": "진행할 라운드 수를 선택하세요",
         # 슬라이드 내용
         "slide1_title": "1. 파티 타임",
         "slide1_content": "게임을 만들고 친구를 초대하세요",
@@ -87,6 +88,7 @@ TRANSLATIONS = {
         "short": "Short",
         "medium": "Medium",
         "long": "Long",
+        "select_rounds": "Select the number of rounds to play",
         # 슬라이드 내용
         "slide1_title": "1. Party Time",
         "slide1_content": "Create a game and invite your friends",
@@ -260,8 +262,17 @@ def show_lobby_screen(room_code, player_name):
 
     # 🧑‍💼 방장만 게임 시작 가능 (첫 입장자)
     if players and players[0] == player_name:
+        # 라운드 수 설정 추가
+        rounds = st.number_input(get_text("select_rounds"), min_value=1, max_value=5, value=3, step=1)
+        
         if st.button("🚀 " + get_text("start_game")):
-            start_game(room_code)
+            # rooms.json에 라운드 수 설정 저장
+            rooms = load_rooms()
+            rooms[room_code]["status"] = "started"
+            rooms[room_code]["current_round"] = 1
+            rooms[room_code]["total_rounds"] = rounds  # ✅ 라운드 수 설정
+            save_rooms(rooms)
+            
             st.session_state.page = "scenario"
             st.rerun()
     else:
