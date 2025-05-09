@@ -6,110 +6,7 @@ import time
 from datetime import datetime
 import json
 from streamlit.components.v1 import html
-
-# 다국어 텍스트 딕셔너리
-TRANSLATIONS = {
-    "ko": {
-        "title": "🧑‍🤝‍🧑 Death by AI - 로비",
-        "settings": "⚙️ 설정",
-        "language_settings": "🌐 언어 설정",
-        "select_language": "언어 선택",
-        "korean": "한국어",
-        "english": "영어",
-        "save_settings": "설정 저장",
-        "settings_saved": "설정이 저장되었습니다!",
-        "room_code_missing": "방 코드 또는 닉네임 정보가 없습니다. 다시 시작해주세요.",
-        "room_code_label": "방 코드",
-        "copy_code": "코드 복사하기",
-        "copied": "복사되었습니다! (직접 복사해주세요)",
-        "participants": "현재 참가자",
-        "game_rules": "게임 방법",
-        "start_game": "게임 시작",
-        "wait_for_host": "방장이 게임 시작을 눌러야 시작됩니다. 기다려주세요!",
-        "prev": "이전",
-        "next": "다음",
-        "close": "닫기",
-        "game_settings": "게임 설정",
-        "settings_title": "⚙️ 게임 설정",
-        "back_to_lobby": "로비로 돌아가기",
-        "game_mode": "게임 모드",
-        "normal_mode": "일반 모드",
-        "advanced_mode": "고급 모드",
-        "personality": "AI 성격",
-        "voice_volume": "음성 볼륨",
-        "music_volume": "음악 볼륨",
-        "round_length": "라운드 길이",
-        "short": "짧게",
-        "medium": "보통",
-        "long": "길게",
-        "select_rounds": "진행할 라운드 수를 선택하세요",
-        # 슬라이드 내용
-        "slide1_title": "1. 파티 타임",
-        "slide1_content": "게임을 만들고 친구를 초대하세요",
-        "slide2_title": "2. 치명적인 시나리오",
-        "slide2_content": "치명적인 시나리오를 선택하십시오. 예) '좁고 밀폐된 지하 벙커에 갇혔습니다'",
-        "slide3_title": "3. 생존 전략",
-        "slide3_content": "생존을 위해 전략을 입력하십시오.",
-        "slide4_title": "4. AI 판정",
-        "slide4_content": "AI가 플레이어의 전략이 생존할 가치가 있는지 여부를 결정합니다.",
-        "slide5_title": "5. 승리 조건",
-        "slide5_content": "라운드 후 사망 횟수가 가장 적은 플레이어가 승리합니다."
-    },
-    "en": {
-        "title": "🧑‍🤝‍🧑 Death by AI - Lobby",
-        "settings": "⚙️ Settings",
-        "language_settings": "🌐 Language Settings",
-        "select_language": "Select Language",
-        "korean": "Korean",
-        "english": "English",
-        "save_settings": "Save Settings",
-        "settings_saved": "Settings saved successfully!",
-        "room_code_missing": "Room code or nickname information is missing. Please restart.",
-        "room_code_label": "Room Code",
-        "copy_code": "Copy Code",
-        "copied": "Copied! (Please copy manually)",
-        "participants": "Current Participants",
-        "game_rules": "Game Rules",
-        "start_game": "Start Game",
-        "wait_for_host": "The host needs to start the game. Please wait!",
-        "prev": "Previous",
-        "next": "Next",
-        "close": "Close",
-        "game_settings": "Game Settings",
-        "settings_title": "⚙️ Game Settings",
-        "back_to_lobby": "Back to Lobby",
-        "game_mode": "Game Mode",
-        "normal_mode": "Normal Mode",
-        "advanced_mode": "Advanced Mode",
-        "personality": "AI Personality",
-        "voice_volume": "Voice Volume",
-        "music_volume": "Music Volume",
-        "round_length": "Round Length", 
-        "short": "Short",
-        "medium": "Medium",
-        "long": "Long",
-        "select_rounds": "Select the number of rounds to play",
-        # 슬라이드 내용
-        "slide1_title": "1. Party Time",
-        "slide1_content": "Create a game and invite your friends",
-        "slide2_title": "2. Deadly Scenario",
-        "slide2_content": "Choose a deadly scenario. Example: 'Trapped in a narrow, enclosed underground bunker'",
-        "slide3_title": "3. Survival Strategy",
-        "slide3_content": "Enter your strategy for survival.",
-        "slide4_title": "4. AI Judgment",
-        "slide4_content": "AI determines whether players' strategies are worth surviving.",
-        "slide5_title": "5. Victory Condition",
-        "slide5_content": "The player with the fewest deaths after rounds wins."
-    }
-}
-
-def get_text(key):
-    """현재 언어 설정에 맞는 텍스트를 반환합니다."""
-    if "language" not in st.session_state:
-        st.session_state.language = "ko"  # 기본 언어는 한국어
-    
-    lang = st.session_state.language
-    return TRANSLATIONS[lang].get(key, key)  # 번역이 없으면 키 자체를 반환
+from view.language import get_text
 
 def a2():
     bg()
@@ -199,18 +96,11 @@ def show_settings_screen():
             
     with col2:
         if st.button(get_text("save_settings"), use_container_width=True):
-            # 언어 설정만 저장
-            previous_lang = st.session_state.language
+            # 언어 설정 저장
             st.session_state.language = selected_language
-            
             st.success(get_text("settings_saved"))
-            st.session_state.show_settings = False
-            
-            # 언어가 변경되었다면 페이지 새로고침
-            if previous_lang != selected_language:
-                st.rerun()
-            else:
-                st.rerun()
+            time.sleep(1)
+            st.rerun()
 
 def show_lobby_screen(room_code, player_name):
     """로비 화면을 표시합니다."""
@@ -262,7 +152,7 @@ def show_lobby_screen(room_code, player_name):
 
     # 🧑‍💼 방장만 게임 시작 가능 (첫 입장자)
     if players and players[0] == player_name:
-        # 라운드 수 설정 추가
+        # 라운드 수 설정 추가 - 기존 UI 복원
         rounds = st.number_input(get_text("select_rounds"), min_value=1, max_value=5, value=3, step=1)
         
         if st.button("🚀 " + get_text("start_game")):
