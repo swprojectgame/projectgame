@@ -24,8 +24,5 @@ def a4():
 
     # 결과 페이지로 이동 및 GPT 호출
     if st.button("제출"):
-        scenario = st.session_state["scenario"]
-        strategies = st.session_state["input_survive"]
-
         st.session_state.page = "result"
         st.rerun()
