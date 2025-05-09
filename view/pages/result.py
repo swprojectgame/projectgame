@@ -1,11 +1,13 @@
 import streamlit as st
 import random
 import openai
-from view.pages.prompt import scenario, strategies
 from view.ui.bg import bg2, bg_cl  # type: ignore
 
 # OpenAI 키 설정
 openai.api_key = st.secrets["OPENAI_API_KEY"]  # Streamlit secrets에 키 저장 필요
+
+scenario = st.session_state.get("scenario")
+strategies = st.session_state.get("input_survive")
 
 def generate_outcome(scenario, strategies):
     """GPT에게 시나리오와 전략을 보내고, 30% 생존 확률 기반으로 허구 섞인 이야기 생성"""
