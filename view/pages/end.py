@@ -3,54 +3,11 @@ import streamlit as st
 from view.ui.bg import bg  # 배경 유지
 from logic.room_manager import load_rooms
 from logic.game_flow import get_survival_count
-
-# 다국어 텍스트 딕셔너리
-TRANSLATIONS = {
-    "ko": {
-        "title": "🏁 게임 종료",
-        "game_end": "모든 라운드가 종료되었습니다!",
-        "congrats": "🎉 생존과 죽음의 AI 게임이 끝났습니다.",
-        "restart_info": "🔁 다시 시작하려면 아래 버튼을 클릭하세요.",
-        "restart": "다시 시작하기",
-        "thanks": "감사합니다! 😊",
-        "results_title": "📊 플레이어 생존 결과",
-        "player": "플레이어",
-        "survived": "생존",
-        "died": "사망",
-        "total_rounds": "총 라운드: {rounds}"
-    },
-    "en": {
-        "title": "🏁 Game Over",
-        "game_end": "All rounds have been completed!",
-        "congrats": "🎉 The AI game of survival and death has ended.",
-        "restart_info": "🔁 Click the button below to restart.",
-        "restart": "Restart Game",
-        "thanks": "Thank you! 😊",
-        "results_title": "📊 Player Survival Results",
-        "player": "Player",
-        "survived": "Survived",
-        "died": "Died",
-        "total_rounds": "Total Rounds: {rounds}"
-    }
-}
-
-def get_text(key, **kwargs):
-    """현재 언어 설정에 맞는 텍스트를 반환합니다."""
-    if "language" not in st.session_state:
-        st.session_state.language = "ko"  # 기본 언어는 한국어
-    
-    lang = st.session_state.language
-    text = TRANSLATIONS[lang].get(key, key)  # 번역이 없으면 키 자체를 반환
-    
-    # 포맷팅이 필요한 경우 처리
-    if kwargs:
-        text = text.format(**kwargs)
-        
-    return text
+from view.language import get_text
 
 def a6():
     bg()
-    st.title(get_text("title"))
+    st.title(get_text("title_end"))
 
     st.success(get_text("game_end"))
     st.markdown(f"### {get_text('congrats')}")
@@ -74,12 +31,27 @@ def a6():
                 survived_count = player_data.get("survived_count", 0)
                 died_count = total_rounds - survived_count
                 
-                # 생존/사망 이모티콘 생성
+                # 생존/사망 결과를 색상으로 구분하여 표시
+                survived_text = f"<span style='color: #00cc00;'>{get_text('survived')}: {survived_count}</span>"
+                died_text = f"<span style='color: #ff5555;'>{get_text('died')}: {died_count}</span>"
+                
+                # 이모티콘 표시
                 survived_emoji = "😄 " * survived_count
                 died_emoji = "💀 " * died_count
                 
-                # 플레이어 결과 표시 (생존이 먼저 오도록 순서 변경)
-                st.markdown(f"**{player_name}**: {survived_emoji}{died_emoji}")
+                # 플레이어 결과 표시
+                st.markdown(f"**{player_name}**: {survived_text} | {died_text}", unsafe_allow_html=True)
+                st.markdown(f"{survived_emoji}{died_emoji}")
+                
+                # 승리 여부 표시 (가장 많이 생존한 플레이어)
+                if "max_survived" not in locals() or survived_count > locals()["max_survived"]:
+                    locals()["max_survived"] = survived_count
+                    locals()["winner"] = player_name
+            
+            # 승자 표시
+            if "winner" in locals():
+                st.markdown("---")
+                st.markdown(f"### 🏆 {locals()['winner']}")
 
     st.markdown("---")
     st.info(get_text("restart_info"))
