@@ -62,16 +62,3 @@ def fx1():
         <div class="fx1-overlay"></div>
         <div class="fx1-slide-text">시나리오가 오고 있습니다!</div>
     """, unsafe_allow_html=True)
-
-    # JS로 페이지 이동 유도 (6초 후 rerun 유도)
-    components.html("""
-        <script>
-        setTimeout(() => {
-            fetch('/_stcore/stream', {
-                method: 'POST'
-            }).then(() => {
-                window.location.reload();
-            });
-        }, 6000);  // fx1 애니메이션 길이만큼 기다리기
-        </script>
-    """, height=0)
