@@ -11,6 +11,24 @@ from view.language import get_text
 def a2():
     bg()
     
+    # CSS 스타일 추가: 라운드 선택란에서 - + 버튼만 작동하도록 설정
+    st.markdown("""
+    <style>
+    /* 라운드 선택 input 숨기고 스텝퍼(-/+) 버튼만 표시 */
+    .stNumberInput input[type="number"] {
+        pointer-events: none;
+        background-color: #f0f2f6;
+        color: #31333F;
+    }
+    
+    /* 숨겨진 -/+ 버튼은 활성화 */
+    .stNumberInput [data-testid="stNumberInputIncrement"], 
+    .stNumberInput [data-testid="stNumberInputDecrement"] {
+        pointer-events: auto;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
     # 설정 상태 관리
     if "show_settings" not in st.session_state:
         st.session_state.show_settings = False
