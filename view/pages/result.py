@@ -1,6 +1,6 @@
 import streamlit as st
 from view.ui.bg import bg2, bg_cl  # type: ignore
-from logic.game_flow import generate_result, get_result, reset_submissions
+from logic.game_flow import generate_result, get_result, reset_submissions, update_survival_records
 from logic.utils import get_random_situation, get_different_situation
 from logic.room_manager import assign_random_situation_to_all, load_rooms, save_rooms
 from view.language import get_text
@@ -124,17 +124,32 @@ def a5():
     if current_round >= max_round:
         st.success(get_text("game_end"))
         if st.button(get_text("game_over")):
+            # 결과를 다시 한번 업데이트하여 최종 카운트 확인
+            if result:
+                update_survival_records(code, result)
+            
             st.session_state.page = "end"
             st.rerun()
     else:
         # ✅ 다음 라운드로 진행
         if st.button(get_text("next_round")):
-            # 라운드 증가를 먼저 해서 새 라운드 번호로 상황을 할당받도록 함
+            # 결과를 다시 한번 업데이트하여 현재 라운드 카운트 확인
+            if result:
+                update_survival_records(code, result)
+            
+            # 현재 라운드 결과가 제대로 저장되었는지 확인
+            rooms = load_rooms()  # 최신 데이터 다시 로드
+            
+            # 라운드 증가
+            current_round = rooms[code].get("current_round", 1)
             rooms[code]["current_round"] = current_round + 1
             save_rooms(rooms)
             
-            # 최신 정보로 rooms 갱신
-            rooms = load_rooms()
+            # 제출 상태 초기화 - 이 함수가 라운드별 결과를 올바르게 유지함
+            reset_submissions(code)
+            
+            # 라운드가 증가된 후 새로운 무작위 상황 할당
+            rooms = load_rooms()  # 다시 최신 데이터 로드
             updated_round = rooms[code].get("current_round", 1)
             
             # 모든 플레이어에게 동일한, 이전과 다른 새로운 무작위 상황 할당
@@ -146,9 +161,6 @@ def a5():
                     new_situation = new_rooms[code].get("situation", "")
                     if new_situation != current_situation and new_situation:
                         break  # 변경 성공
-            
-            # 제출 상태 초기화
-            reset_submissions(code)
             
             # 다음 라운드 화면으로 이동
             st.session_state.page = "scenario"
