@@ -8,7 +8,7 @@ client = OpenAI(api_key="")
 def generate_response(prompt):
     try:
         response = client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "당신은 죽음의 게임을 운영하는 AI 심판입니다."},
                 {"role": "user", "content": prompt}
