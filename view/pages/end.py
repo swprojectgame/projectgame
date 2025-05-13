@@ -7,6 +7,11 @@ from view.language import get_text
 
 def a6():
     bg()
+    
+    # 영어로 표시되도록 언어 설정
+    if "language" not in st.session_state:
+        st.session_state.language = "en"
+    
     st.title(get_text("title_end"))
 
     st.success(get_text("game_end"))
@@ -79,3 +84,31 @@ def a6():
         st.rerun()
         
     st.markdown(get_text("thanks"))
+    
+    # CSS로 시작 화면과 라운드 관련 UI 요소 숨기기
+    st.markdown("""
+    <style>
+    /* 시작 화면 숨기기 */
+    .stApp header {
+        display: none !important;
+    }
+    
+    /* 라운드 선택 및 관련 UI 요소 숨기기 */
+    div.stNumberInput, p:contains("진행할 라운드 수를 선택하세요"),
+    div:contains("라운드"), p:contains("라운드"), input[type="number"] {
+        display: none !important;
+    }
+    
+    /* 로비 화면에서 넘어온 요소들 숨기기 */
+    div:contains("게임 방법"), div:contains("게임 시작"), button:contains("게임 방법"), button:contains("게임 시작"), 
+    div:contains("참가자"), button:contains("복사"), div:contains("방 코드"), 
+    div.stSlider, div.element-container:has(button:contains("게임 시작")) {
+        display: none !important;
+    }
+    
+    /* 슬라이드 관련 요소 숨기기 */
+    div.slide-container, div:contains("슬라이드"), div.element-container:has(div.slide-container) {
+        display: none !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
