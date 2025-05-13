@@ -4,6 +4,7 @@ from logic.room_manager import (
 )
 from api.ai_api import generate_response  # 🔁 GPT API 호출 함수 사용
 import re
+import streamlit as st
 
 # ✅ 유저가 행동을 제출
 def submit_scenario(code, name, scenario):
@@ -28,29 +29,54 @@ def generate_result(code):
     if code not in rooms:
         return None
 
+    # 언어 확인
+    is_english = "language" in st.session_state and st.session_state.language == "en"
+
     # 프롬프트 구성
-    prompt = "당신은 공정하고 창의적인 죽음의 심판관입니다.\n"
-    prompt += "다음은 플레이어들이 위기 상황에 대응한 내용입니다.\n\n"
+    if is_english:
+        prompt = "You are a fair and creative judge of death.\n"
+        prompt += "Here are the players' responses to crisis situations:\n\n"
 
-    for name, player in rooms[code]["players"].items():
-        situation = player.get("situation", "")
-        action = player.get("scenario", "")
-        prompt += f"플레이어 '{name}'\n"
-        prompt += f"상황: {situation}\n"
-        prompt += f"행동: {action}\n"
-        prompt += f"결과: "
+        for name, player in rooms[code]["players"].items():
+            situation = player.get("situation", "")
+            action = player.get("scenario", "")
+            prompt += f"Player '{name}'\n"
+            prompt += f"Situation: {situation}\n"
+            prompt += f"Action: {action}\n"
+            prompt += f"Result: "
 
-    prompt += (
-        "\n\n각 플레이어의 생존 여부를 유머러스하고 극적으로 판단해 주세요. "
-        "결과는 다음과 같이 출력합니다:\n"
-        "- 제임스: 사망. 샷건은 가짜였다...\n"
-        "- 민지: 생존. 미리 설치해둔 덫이 사자를 잡았다!\n"
-    )
+        prompt += (
+            "\n\nPlease judge each player's survival in a humorous and dramatic way. "
+            "Format the results as follows:\n"
+            "- James: Died. The shotgun was fake...\n"
+            "- Minji: Survived. The trap she set earlier caught the lion!\n"
+        )
+    else:
+        prompt = "당신은 공정하고 창의적인 죽음의 심판관입니다.\n"
+        prompt += "다음은 플레이어들이 위기 상황에 대응한 내용입니다.\n\n"
+
+        for name, player in rooms[code]["players"].items():
+            situation = player.get("situation", "")
+            action = player.get("scenario", "")
+            prompt += f"플레이어 '{name}'\n"
+            prompt += f"상황: {situation}\n"
+            prompt += f"행동: {action}\n"
+            prompt += f"결과: "
+
+        prompt += (
+            "\n\n각 플레이어의 생존 여부를 유머러스하고 극적으로 판단해 주세요. "
+            "결과는 다음과 같이 출력합니다:\n"
+            "- 제임스: 사망. 샷건은 가짜였다...\n"
+            "- 민지: 생존. 미리 설치해둔 덫이 사자를 잡았다!\n"
+        )
 
     try:
         result_text = generate_response(prompt)  # ✅ ai_api.py에서 GPT 호출
     except Exception as e:
-        result_text = f"[GPT 오류] {e}"
+        if is_english:
+            result_text = f"[GPT Error] {e}"
+        else:
+            result_text = f"[GPT 오류] {e}"
 
     rooms[code]["result"] = result_text
     
@@ -84,12 +110,19 @@ def update_survival_records(code, result_text):
     # 플레이어 목록 가져오기
     players = list(rooms[code]["players"].keys())
     
+    # 언어 확인
+    is_english = "language" in st.session_state and st.session_state.language == "en"
+    
     # 생존 여부 확인을 위한 정규식 패턴
     for player_name in players:
-        # 정규식 패턴: "- 플레이어명: 생존." 또는 "- 플레이어명 : 생존." 등의 형태 체크
-        pattern = r"[-\*]\s*" + re.escape(player_name) + r"\s*[:：]\s*(생존|survived|Survived)"
-        # AI가 생성한 결과에서 플레이어 이름 앞뒤로 다른 문자가 붙어 있을 수 있어 부분 매칭으로 검색
-        alternative_pattern = re.compile(r"[-\*]\s*(.*" + re.escape(player_name) + r".*?)[:：]\s*(생존|survived|Survived)", re.IGNORECASE)
+        if is_english:
+            # 영어 버전 패턴: "- player_name: Survived"
+            pattern = r"[-\*]\s*" + re.escape(player_name) + r"\s*[:：]\s*(Survived|survived)"
+            alternative_pattern = re.compile(r"[-\*]\s*(.*" + re.escape(player_name) + r".*?)[:：]\s*(Survived|survived)", re.IGNORECASE)
+        else:
+            # 한국어 버전 패턴: "- player_name: 생존"
+            pattern = r"[-\*]\s*" + re.escape(player_name) + r"\s*[:：]\s*(생존)"
+            alternative_pattern = re.compile(r"[-\*]\s*(.*" + re.escape(player_name) + r".*?)[:：]\s*(생존)", re.IGNORECASE)
         
         # 두 가지 패턴 중 하나라도 매치되면 생존으로 판정
         direct_match = bool(re.search(pattern, result_text, re.IGNORECASE))
