@@ -64,7 +64,8 @@ def join_room(code, name):
                 "submitted": False,
                 "scenario": "",
                 "situation": "",
-                "survived_count": 0  # 생존 횟수 초기화
+                "survived_count": 0,  # 생존 횟수 초기화
+                "rounds_results": {}  # 라운드별 결과 초기화
             }
             save_rooms(rooms)
         return True
