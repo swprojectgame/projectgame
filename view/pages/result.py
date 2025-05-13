@@ -13,7 +13,7 @@ def a5():
     code = st.session_state.room_code
     rooms = load_rooms()
 
-    result = get_result(code)
+    result = get_result(code)  # 🔹 현재 라운드의 결과만 불러옴
     if not result:
         result = generate_result(code)
 
@@ -41,6 +41,7 @@ def a5():
             st.session_state.page = "scenario"
             st.rerun()
 
+    # 🔹 라운드 선택 UI 숨기기
     st.markdown("""
     <style>
     div.stNumberInput, p:contains("진행할 라운드 수를 선택하세요"),
