@@ -3,27 +3,10 @@
 import os
 import openai
 
-def generate_response(prompt):
-    try:
-        openai.api_key = os.getenv("OPENAI_API_KEY")
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "당신은 공정하고 창의적인 죽음의 심판관입니다."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.7,
-            max_tokens=500
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        return f"AI 응답 생성 중 오류 발생: {str(e)}"
-
-# ✅ 실제 API 호출용 코드 (나중에 활성화하면 됨)
-"""
+    
 from openai import OpenAI
 
-client = OpenAI(api_key="sk-여기에_너의_키")
+client = OpenAI(api_key="")
 
 def generate_response(prompt):
     try:
@@ -37,7 +20,7 @@ def generate_response(prompt):
         return response.choices[0].message.content.strip()
     except Exception as e:
         return f"[GPT 오류] {e}"
-"""
+
 
 ## api 호출하는 법
 ## from api.ai_api import generate_response
