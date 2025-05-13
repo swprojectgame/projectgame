@@ -113,7 +113,8 @@ def a6():
             total_rounds = rooms[room_code].get("total_rounds", 5)
             st.markdown(get_text("total_rounds", rounds=total_rounds))
             
-            # 플레이어 간단 결과 표시
+            # 플레이어 데이터 수집 및 생존 횟수 기준으로 정렬
+            players_data = []
             for player_name, player_data in rooms[room_code]["players"].items():
                 # 각 라운드 결과 가져오기
                 rounds_results = player_data.get("rounds_results", {})
@@ -127,22 +128,34 @@ def a6():
                 # 사망 횟수 계산        
                 died_count = total_rounds - survived_count
                 
+                # 플레이어 정보 저장
+                players_data.append({
+                    "name": player_name,
+                    "survived_count": survived_count,
+                    "died_count": died_count
+                })
+            
+            # 생존 횟수 기준으로 내림차순 정렬
+            players_data.sort(key=lambda x: x["survived_count"], reverse=True)
+            
+            # 순위 부여 및 정렬된 결과 표시
+            for i, player in enumerate(players_data, 1):
+                player_name = player["name"]
+                survived_count = player["survived_count"]
+                died_count = player["died_count"]
+                
                 # 생존/사망 결과를 색상으로 구분하여 표시
                 survived_text = f"<span style='color: #00cc00;'>{get_text('survived')}: {survived_count}</span>"
                 died_text = f"<span style='color: #ff5555;'>{get_text('died')}: {died_count}</span>"
                 
-                # 플레이어 결과 표시
-                st.markdown(f"**{player_name}**: {survived_text} | {died_text}", unsafe_allow_html=True)
-                
-                # 승리 여부 표시 (가장 많이 생존한 플레이어)
-                if "max_survived" not in locals() or survived_count > locals()["max_survived"]:
-                    locals()["max_survived"] = survived_count
-                    locals()["winner"] = player_name
+                # 순위 표시와 함께 플레이어 결과 표시
+                rank_icon = "🥇" if i == 1 else ("🥈" if i == 2 else ("🥉" if i == 3 else f"{i}."))
+                st.markdown(f"{rank_icon} **{player_name}**: {survived_text} | {died_text}", unsafe_allow_html=True)
             
-            # 승자 표시
-            if "winner" in locals():
+            # 승자 표시 (이미 정렬했으므로 첫 번째 플레이어가 승자)
+            if players_data:
                 st.markdown("---")
-                st.markdown(f"### 🏆 {locals()['winner']}")
+                st.markdown(f"### 🏆 {players_data[0]['name']}")
 
     st.markdown("---")
     st.info(get_text("restart_info"))
