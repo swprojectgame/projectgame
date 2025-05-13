@@ -115,20 +115,24 @@ def a6():
             
             # 플레이어 간단 결과 표시
             for player_name, player_data in rooms[room_code]["players"].items():
-                survived_count = player_data.get("survived_count", 0)
+                # 각 라운드 결과 가져오기
+                rounds_results = player_data.get("rounds_results", {})
+                
+                # 생존 횟수 계산
+                survived_count = 0
+                for round_num in range(1, total_rounds + 1):
+                    if str(round_num) in rounds_results and rounds_results[str(round_num)]:
+                        survived_count += 1
+                
+                # 사망 횟수 계산        
                 died_count = total_rounds - survived_count
                 
                 # 생존/사망 결과를 색상으로 구분하여 표시
                 survived_text = f"<span style='color: #00cc00;'>{get_text('survived')}: {survived_count}</span>"
                 died_text = f"<span style='color: #ff5555;'>{get_text('died')}: {died_count}</span>"
                 
-                # 이모티콘 표시
-                survived_emoji = "😄 " * survived_count
-                died_emoji = "💀 " * died_count
-                
                 # 플레이어 결과 표시
                 st.markdown(f"**{player_name}**: {survived_text} | {died_text}", unsafe_allow_html=True)
-                st.markdown(f"{survived_emoji}{died_emoji}")
                 
                 # 승리 여부 표시 (가장 많이 생존한 플레이어)
                 if "max_survived" not in locals() or survived_count > locals()["max_survived"]:
