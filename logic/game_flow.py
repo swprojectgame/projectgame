@@ -1,5 +1,6 @@
 from logic.room_manager import load_rooms, save_rooms
 from api.ai_api import generate_response  # 🔁 GPT API 호출 함수 사용
+import streamlit as st  # 🔸 언어 설정을 위해 streamlit 세션 사용
 import re
 
 # ✅ 유저가 행동을 제출
@@ -27,24 +28,45 @@ def generate_result(code):
 
     current_round = rooms[code].get("current_round", 1)  # 🔹 현재 라운드 추출
 
-    # 🔹 GPT에 보낼 프롬프트 구성
-    prompt = "당신은 공정하고 창의적인 죽음의 심판관입니다.\n"
-    prompt += "다음은 플레이어들이 위기 상황에 대응한 내용입니다.\n\n"
+    # 🔹 언어 설정에 따라 프롬프트 구성 분기
+    language = st.session_state.get("language", "ko")
+
+    if language == "en":
+        prompt = "You are a fair and creative judge in a life-or-death game.\n"
+        prompt += "The following are how each player responded to their crisis:\n\n"
+    else:
+        prompt = "당신은 공정하고 창의적인 죽음의 심판관입니다.\n"
+        prompt += "다음은 플레이어들이 위기 상황에 대응한 내용입니다.\n\n"
 
     for name, player in rooms[code]["players"].items():
         situation = player.get("situation", "")
         action = player.get("scenario", "")
-        prompt += f"플레이어 '{name}'\n"
-        prompt += f"상황: {situation}\n"
-        prompt += f"행동: {action}\n"
-        prompt += f"결과: "
 
-    prompt += (
-        "\n\n각 플레이어의 생존 여부를 유머러스하고 극적으로 판단해 주세요. "
-        "결과는 다음과 같이 출력합니다:\n"
-        "- 제임스: 사망. 샷건은 가짜였다...\n"
-        "- 민지: 생존. 미리 설치해둔 덫이 사자를 잡았다!\n"
-    )
+        if language == "en":
+            prompt += f"Player '{name}'\n"
+            prompt += f"Situation: {situation}\n"
+            prompt += f"Action: {action}\n"
+            prompt += f"Result: "
+        else:
+            prompt += f"플레이어 '{name}'\n"
+            prompt += f"상황: {situation}\n"
+            prompt += f"행동: {action}\n"
+            prompt += f"결과: "
+
+    if language == "en":
+        prompt += (
+            "\n\nPlease determine the survival status of each player in a humorous and dramatic way.\n"
+            "Format the result like this:\n"
+            "- James: Died. The shotgun was fake...\n"
+            "- Minji: Survived. The trap she set up beforehand caught the lion!\n"
+        )
+    else:
+        prompt += (
+            "\n\n각 플레이어의 생존 여부를 유머러스하고 극적으로 판단해 주세요.\n"
+            "결과는 다음과 같이 출력합니다:\n"
+            "- 제임스: 사망. 샷건은 가짜였다...\n"
+            "- 민지: 생존. 미리 설치해둔 덫이 사자를 잡았다!\n"
+        )
 
     try:
         result_text = generate_response(prompt)
@@ -75,7 +97,6 @@ def reset_submissions(code):
         for p in rooms[code]["players"].values():
             p["submitted"] = False
             p["scenario"] = ""
-        # 🔹 기존 result는 초기화 안 해도 됨 (라운드별 저장으로 변경됨)
         save_rooms(rooms)
 
 # ✅ 결과 텍스트를 파싱하여 생존 여부 판단 및 기록
