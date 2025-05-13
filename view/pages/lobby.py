@@ -1,5 +1,5 @@
 import streamlit as st
-from logic.room_manager import get_players, start_game, is_game_started, load_rooms, save_rooms
+from logic.room_manager import get_players, start_game, is_game_started, load_rooms, save_rooms, assign_random_situation_to_all
 from view.ui.bg import bg  # type: ignore
 from streamlit_autorefresh import st_autorefresh
 import time
@@ -179,7 +179,16 @@ def show_lobby_screen(room_code, player_name):
             rooms[room_code]["status"] = "started"
             rooms[room_code]["current_round"] = 1
             rooms[room_code]["total_rounds"] = rounds  # ✅ 라운드 수 설정
+            
+            # round_situations 필드 초기화
+            if "round_situations" not in rooms[room_code]:
+                rooms[room_code]["round_situations"] = {}
+            
+            # 방정보 저장
             save_rooms(rooms)
+            
+            # 첫 라운드 상황을 즉시 할당
+            assign_random_situation_to_all(room_code)
             
             st.session_state.page = "scenario"
             st.rerun()
