@@ -1,8 +1,24 @@
 import streamlit as st
-from view.ui.bg import bg  # 배경 유지
-from logic.room_manager import load_rooms
+import time
+import json
+import os
+from view.ui.bg import bg
+from logic.room_manager import save_rooms  # load_rooms는 아래에서 교체
 from logic.game_flow import get_survival_count
 from view.language import get_text
+
+# ✅ 안전하게 rooms.json을 읽어오는 함수 (재시도 포함)
+def robust_load_rooms(retry=5, delay=0.1):
+    for _ in range(retry):
+        try:
+            if not os.path.exists("rooms.json"):
+                return {}
+            with open("rooms.json", "r", encoding="utf-8") as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            time.sleep(delay)
+    print("❌ rooms.json을 끝내 읽을 수 없습니다.")
+    return {}
 
 def a6():
     bg()
@@ -14,17 +30,16 @@ def a6():
     # 방 정보 가져오기
     if "room_code" in st.session_state:
         room_code = st.session_state.room_code
-        rooms = load_rooms()
+
+        rooms = robust_load_rooms()  # ✅ 안전하게 rooms.json 읽기
 
         if room_code in rooms:
             st.markdown("---")
             st.subheader(get_text("results_title"))
 
-            # 총 라운드 수 표시
             total_rounds = rooms[room_code].get("total_rounds", 5)
             st.markdown(get_text("total_rounds", rounds=total_rounds))
 
-            # 플레이어 생존/사망 결과 표시
             max_survived = -1
             winner = ""
 
@@ -45,10 +60,22 @@ def a6():
                     max_survived = survived_count
                     winner = player_name
 
-            # 승자 표시
             if winner:
                 st.markdown("---")
                 st.markdown(f"### 🏆 {winner}")
+
+            st.markdown("---")
+            st.subheader("🏆 플레이어 생존 순위")
+
+            sorted_players = sorted(
+                rooms[room_code]["players"].items(),
+                key=lambda item: item[1].get("survived_count", 0),
+                reverse=True
+            )
+
+            for idx, (name, data) in enumerate(sorted_players, start=1):
+                count = data.get("survived_count", 0)
+                st.markdown(f"**{idx}위** - {name}: {count}회 생존")
 
     st.markdown("---")
     st.info(get_text("restart_info"))

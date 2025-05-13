@@ -5,20 +5,25 @@ import string
 
 ROOM_FILE = "rooms.json"
 
-# 🔄 JSON 파일에서 방 정보 불러오기
+# 🔄 JSON 파일에서 방 정보 불러오기 (안전 보강)
 def load_rooms():
-    if not os.path.exists(ROOM_FILE):
+    if not os.path.exists(ROOM_FILE) or os.path.getsize(ROOM_FILE) == 0:
+        print("⚠️ rooms.json 없음 또는 비어 있음 → 빈 딕셔너리 반환")
         return {}
-    with open(ROOM_FILE, "r") as f:
-        return json.load(f)
+    with open(ROOM_FILE, "r", encoding="utf-8") as f:
+        try:
+            return json.load(f)
+        except json.JSONDecodeError:
+            print("⚠️ JSON 형식 오류 → 빈 딕셔너리 반환")
+            return {}
 
 # 💾 JSON 파일에 방 정보 저장
 def save_rooms(rooms):
-    with open(ROOM_FILE, "w") as f:
+    with open(ROOM_FILE, "w", encoding="utf-8") as f:
         json.dump(rooms, f, indent=2)
 
 # 🏗 방 생성 (중복 없는 랜덤 코드)
-def create_room(rounds=3):  # 기본값으로 3라운드
+def create_room(rounds=3):
     rooms = load_rooms()
     while True:
         code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
@@ -29,12 +34,10 @@ def create_room(rounds=3):  # 기본값으로 3라운드
                 "situation": "",
                 "result": "",
                 "current_round": 1,
-                "total_rounds": rounds  # ✅ total_rounds는 이후 lobby에서 수정됨
+                "total_rounds": rounds
             }
             save_rooms(rooms)
             return code
-
-
 
 # 🚪 플레이어가 방에 입장
 def join_room(code, name):

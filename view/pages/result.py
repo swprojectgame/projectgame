@@ -13,9 +13,8 @@ def a5():
     code = st.session_state.room_code
     rooms = load_rooms()
 
-    result = get_result(code)  # 🔹 현재 라운드의 결과만 불러옴
-    if not result:
-        result = generate_result(code)
+    # ✅ 무조건 최신 결과 생성 → survived_count 업데이트 보장
+    result = generate_result(code)
 
     current_round = rooms[code].get("current_round", 1)
     max_round = rooms[code].get("total_rounds", 3)

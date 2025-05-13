@@ -1,6 +1,6 @@
 from logic.room_manager import load_rooms, save_rooms
-from api.ai_api import generate_response  # 🔁 GPT API 호출 함수 사용
-import streamlit as st  # 🔸 언어 설정을 위해 streamlit 세션 사용
+from api.ai_api import generate_response
+import streamlit as st
 import re
 
 # ✅ 유저가 행동을 제출
@@ -26,39 +26,41 @@ def generate_result(code):
     if code not in rooms:
         return None
 
-    current_round = rooms[code].get("current_round", 1)  # 🔹 현재 라운드 추출
+    current_round = rooms[code].get("current_round", 1)
 
-    # 🔹 언어 설정에 따라 프롬프트 구성 분기
+    # ✅ 중복 호출 방지
+    if str(current_round) in rooms[code].get("results", {}):
+        return rooms[code]["results"][str(current_round)]
+
+    print(f"🚨 GPT 호출됨 for round {current_round}")
+
+    # 🔹 언어 설정에 따라 프롬프트 구성
     language = st.session_state.get("language", "ko")
 
     if language == "en":
-        prompt = "You are a fair and creative judge in a life-or-death game.\n"
-        prompt += "The following are how each player responded to their crisis:\n\n"
+        prompt = (
+            "You are a fair and creative judge in a life-or-death game.\n"
+            "Below are how each player responded to their situation:\n\n"
+        )
     else:
-        prompt = "당신은 공정하고 창의적인 죽음의 심판관입니다.\n"
-        prompt += "다음은 플레이어들이 위기 상황에 대응한 내용입니다.\n\n"
+        prompt = (
+            "당신은 공정하고 창의적인 죽음의 심판관입니다.\n"
+            "다음은 플레이어들이 위기 상황에 대응한 요약입니다:\n\n"
+        )
 
+    # 🔸 상황 요약 입력 (간결하게)
     for name, player in rooms[code]["players"].items():
         situation = player.get("situation", "")
         action = player.get("scenario", "")
+        prompt += f"- {name}: {situation} → {action}\n"
 
-        if language == "en":
-            prompt += f"Player '{name}'\n"
-            prompt += f"Situation: {situation}\n"
-            prompt += f"Action: {action}\n"
-            prompt += f"Result: "
-        else:
-            prompt += f"플레이어 '{name}'\n"
-            prompt += f"상황: {situation}\n"
-            prompt += f"행동: {action}\n"
-            prompt += f"결과: "
-
+    # 🔸 출력 포맷 지시 (GPT에게 명확하게)
     if language == "en":
         prompt += (
-            "\n\nPlease determine the survival status of each player in a humorous and dramatic way.\n"
+            "\n\nPlease determine whether each player survived or died in a humorous and dramatic way.\n"
             "Format the result like this:\n"
             "- James: Died. The shotgun was fake...\n"
-            "- Minji: Survived. The trap she set up beforehand caught the lion!\n"
+            "- Minji: Survived. Her trap caught the lion just in time!\n"
         )
     else:
         prompt += (
@@ -73,24 +75,23 @@ def generate_result(code):
     except Exception as e:
         result_text = f"[GPT 오류] {e}"
 
-    # 🔹 라운드별 결과 저장
+    # 🔹 결과 저장
     if "results" not in rooms[code]:
         rooms[code]["results"] = {}
-
     rooms[code]["results"][str(current_round)] = result_text
 
-    update_survival_records(code, result_text)
+    update_survival_records(rooms, code, result_text)  # ✅ 수정된 rooms 전달
     save_rooms(rooms)
 
     return result_text
 
-# ✅ 저장된 결과 불러오기 (현재 라운드 기준)
+# ✅ 저장된 결과 불러오기
 def get_result(code):
     rooms = load_rooms()
     current_round = rooms[code].get("current_round", 1)
     return rooms[code].get("results", {}).get(str(current_round), "")
 
-# ✅ 다음 라운드를 위해 제출 상태 초기화
+# ✅ 제출 상태 초기화
 def reset_submissions(code):
     rooms = load_rooms()
     if code in rooms:
@@ -100,28 +101,23 @@ def reset_submissions(code):
         save_rooms(rooms)
 
 # ✅ 결과 텍스트를 파싱하여 생존 여부 판단 및 기록
-def update_survival_records(code, result_text):
-    rooms = load_rooms()
-    if code not in rooms:
-        return
+def update_survival_records(rooms, code, result_text):  # ✅ rooms 인자로 받음
+    normalized_text = result_text.replace("\n", " ").replace("\r", " ")
+    print(f"📦 생존 판단 시작\n{normalized_text}\n")
 
-    players = list(rooms[code]["players"].keys())
-
-    for player_name in players:
-        pattern = r"[-\*]\s*" + re.escape(player_name) + r"\s*[:：]\s*(생존|survived|Survived)"
-        alternative_pattern = re.compile(r"[-\*]\s*(.*" + re.escape(player_name) + r".*?)[:：]\s*(생존|survived|Survived)", re.IGNORECASE)
-
-        direct_match = bool(re.search(pattern, result_text, re.IGNORECASE))
-        alternative_match = bool(alternative_pattern.search(result_text))
-        survived = direct_match or alternative_match
+    for player_name in rooms[code]["players"]:
+        pattern = re.compile(rf"{re.escape(player_name)}.*?(생존|survived|Survived)", re.IGNORECASE)
+        survived = bool(pattern.search(normalized_text))
+        print(f"🔍 {player_name} → 생존 판정: {survived}")
 
         if "survived_count" not in rooms[code]["players"][player_name]:
             rooms[code]["players"][player_name]["survived_count"] = 0
 
         if survived:
             rooms[code]["players"][player_name]["survived_count"] += 1
+            print(f"✅ {player_name} survived_count += 1 → {rooms[code]['players'][player_name]['survived_count']}")
 
-    save_rooms(rooms)
+    print("💾 저장 준비 완료 (상위에서 save_rooms 실행)")
 
 # ✅ 생존 횟수 조회
 def get_survival_count(code, player_name):
