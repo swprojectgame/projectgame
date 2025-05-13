@@ -174,188 +174,23 @@ def hide_lobby_elements():
     st.markdown(additional_css, unsafe_allow_html=True)
 
 def a4():
-    # 페이지 로드 시 불필요한 요소 숨기기
-    hide_lobby_elements()
-    
     bg_cl()
     bg2("https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExMTdjNGw4cHE0ZjU2cTFqbGJuM3R6dDBqenlzMTY3aGN3YmpqZ3JrZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l87pZAlTSahSABLNqp/giphy.gif")
-
-    # 영어로 표시되도록 언어 설정
-    if "language" not in st.session_state:
-        st.session_state.language = "en"
-
-    # 🔐 필수 정보
-    code = st.session_state.room_code
-    name = st.session_state.player_name
     
-    # 라운드 정보 확인
-    rooms = load_rooms()
-    current_round = rooms[code].get("current_round", 1)
-    
-    # 단계 관리
-    if "phase" not in st.session_state:
-        st.session_state.phase = "input"
-    
-    # 라운드 변경 감지
-    if "last_round" not in st.session_state:
-        st.session_state.last_round = 0
-        
-    # 라운드가 변경되면 phase 초기화
-    if current_round != st.session_state.last_round:
-        st.session_state.phase = "input"
-        st.session_state.last_round = current_round
+    st.title(get_text("slide3_title"))
 
-    # 판단 중인 경우
-    if st.session_state.phase == "judging":
-        st.markdown("<h1 style='text-align: center; color: white;'>" + get_text("judging") + "</h1>", unsafe_allow_html=True)
-        time.sleep(3)
-        st.session_state.phase = "finalizing"
-        st.rerun()
+    username = st.session_state.get("name", None)
+    room_code = st.session_state.get("room_code", "DEFAULT")
 
-    # 최종 판단 단계
-    elif st.session_state.phase == "finalizing":
-        st.markdown("<h1 style='text-align: center; color: white;'>" + get_text("finalizing") + "</h1>", unsafe_allow_html=True)
-        time.sleep(3)
-        st.session_state.page = "result"
-        st.rerun()
+    if "input_survive" not in st.session_state:
+        st.session_state.input_survive = {}
 
-    # 입력 단계
-    elif st.session_state.phase == "input":
-        st.title(get_text("title_prompt"))
+    strategy = st.text_area(get_text("slide3_content"), height=150)
 
-        # 모든 플레이어 제출 상태 확인 (문제 방지를 위한 추가 확인)
-        submitted = False
-        if "players" in rooms[code] and name in rooms[code]["players"]:
-            submitted = rooms[code]["players"][name].get("submitted", False)
-        
-        # 자신이 제출하지 않았는데 다른 화면으로 이동한 경우 수정
-        if not submitted and st.session_state.page == "prompt":
-            st.info(get_text("waiting"))
-            time.sleep(2)
-            st.session_state.page = "scenario"
-            st.rerun()
-
-        # ✅ 모든 플레이어가 제출했는지 확인
-        if check_all_submitted(code):
-            st.session_state.phase = "judging"
+    if st.button(get_text("next_round")):
+        if strategy:
+            st.session_state.input_survive[username] = strategy
+            st.session_state.page = "result"
             st.rerun()
         else:
-            time.sleep(2)  # 2초 대기 후 새로고침
-            st.rerun()
-            
-    # CSS로 시작 화면과 라운드 관련 UI 요소 숨기기
-    st.markdown("""
-    <style>
-    /* 시작 화면 숨기기 */
-    .stApp header {
-        display: none !important;
-    }
-    
-    /* 로비 UI 요소 전체 숨기기 - 더 강력한 선택자 사용 */
-    div[data-testid="stExpander"], 
-    div.stNumberInput, 
-    button:contains("게임 방법"), 
-    button:contains("게임 시작"),
-    button:contains("방 만들기"),
-    button:contains("입장하기"),
-    button:contains("방법"),
-    button:contains("시작"),
-    [data-testid="stHorizontalBlock"] button,
-    [data-testid="baseButton-secondary"],
-    div:has(> p:contains("진행할 라운드")),
-    div:has(> p:contains("라운드 수")),
-    div:has(> label:contains("라운드")),
-    div:has(> button:contains("게임")),
-    div:has(> button:contains("방법")),
-    input[type="number"],
-    div:has(input[type="number"]),
-    div:has(button:contains("게임 시작")),
-    div:has(button:contains("🚀")),
-    [data-testid="stVerticalBlock"]:has(div.stNumberInput),
-    footer {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        height: 0 !important;
-        position: absolute !important;
-        z-index: -9999 !important;
-        pointer-events: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        max-height: 0 !important;
-        overflow: hidden !important;
-    }
-    
-    /* 특정 컨테이너 요소에 대해 더 강력한 숨김 처리 */
-    div:has(> div:has(> button:contains("게임 시작"))),
-    div:has(> div:has(> button:contains("게임 방법"))),
-    div:has(> p:contains("참가자")),
-    div:has(> h3:contains("방 코드")),
-    div:has(> div.stSlider),
-    div.row-widget.stNumberInput,
-    div.element-container:has(div.stNumberInput) {
-        display: none !important;
-        visibility: hidden !important;
-        max-height: 0 !important;
-        overflow: hidden !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-    
-    /* 슬라이드쇼 관련 요소 숨기기 */
-    div.element-container:has(div.slide-container),
-    div:has(> div:contains("슬라이드")) {
-        display: none !important;
-    }
-    
-    /* 추가적인 숨김 처리 - UI 영역 전체 숨김 */
-    div.element-container:has(p:contains("진행할 라운드")),
-    div.element-container:has(button:contains("게임 시작")),
-    div.element-container:has(button:contains("🚀")),
-    div.element-container:has(div.stNumberInput) {
-        display: none !important;
-        height: 0 !important;
-        overflow: hidden !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        visibility: hidden !important;
-    }
-    </style>
-    
-    <script>
-    // 자바스크립트로 추가 제거
-    window.addEventListener('DOMContentLoaded', (event) => {
-        setTimeout(() => {
-            // 게임 시작 버튼 및 라운드 선택 요소 제거
-            const removeElements = () => {
-                // 텍스트 내용으로 요소 찾기
-                document.querySelectorAll('p, button, div, label').forEach(el => {
-                    if (el.innerText && (
-                        el.innerText.includes('게임 시작') || 
-                        el.innerText.includes('라운드 수') ||
-                        el.innerText.includes('진행할 라운드') ||
-                        el.innerText.includes('🚀')
-                    )) {
-                        const parent = el.closest('.element-container') || el.parentElement;
-                        if (parent) parent.style.display = 'none';
-                    }
-                });
-                
-                // 숫자 입력 필드 제거
-                document.querySelectorAll('input[type="number"]').forEach(el => {
-                    const container = el.closest('.row-widget.stNumberInput');
-                    if (container) {
-                        const parent = container.closest('.element-container');
-                        if (parent) parent.style.display = 'none';
-                    }
-                });
-            };
-            
-            // 즉시 실행 및 500ms 간격으로 재실행 (동적 로딩 요소 처리)
-            removeElements();
-            setInterval(removeElements, 500);
-        }, 100);
-    });
-    </script>
-    """, unsafe_allow_html=True)
+            st.warning(get_text("error_occurred_restart"))
