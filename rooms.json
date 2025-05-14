@@ -17,5 +17,118 @@
       "1": "- \ucb48\ub2c8: \uc0dd\uc874. \ubc18\ub780\uc744 \uc77c\uc73c\ud0a8 \ub85c\ubd07\uc740 \uc2e4\uc81c\ub85c\ub294 \uce5c\uad6c\uac00 \ub418\uc5b4 \uce58\uc774\ub294 \ud55c\ud310 \uc2a4\ud2b8\ub9ac\ud2b8 \ud30c\uc774\ud130\ub85c \uacb0\ud22c\ub97c \ub05d\ub0c8\ub2e4... \uace0\ub9c8\uc6cc, \ub85c\ubd07 \uce5c\uad6c!",
       "2": "- \ucb48\ub2c8: \uc0ac\ub9dd. \ub85c\ubd07\ub4e4\uc5d0\uac8c \ub2ec\ub824\ub4e4\ub2e4\uac00 \ub2e4\ub9ac\uc5d0 \uac78\ub824 \ub118\uc5b4\uc9c4 \ud6c4, \ub85c\ubd07 \ud314\uc5d0 \ubc1f\ud600 \uc989\uc2dc \uc804\ud22c \ubd88\ub2a5 \uc0c1\ud0dc\uac00 \ub418\uc5c8\ub2e4\u2026 \uadf8\ub098\ub9c8 \uae0d\uc815\uc801\uc778 \uc810\uc774\ub77c\uba74 \uadf8\uac00 \uc5f0\uad6c\ud55c AI \uc81c\uc5b4 \ucf54\ub4dc\ub294 \uc131\uacf5\uc801\uc73c\ub85c \uc804\uc1a1\ub418\uc5c8\ub2e4\ub294 \uac83. \uadf9\uc801\uc774\uc9c0\ub9cc \uc544\uc27d\uac8c\ub3c4 \uadf8\uc758 \ud76c\ubbf8\ud55c \ud76c\ub9dd\uc740 \uc560\ud0c0\ub294 \ube44\uba85\uacfc \ud568\uaed8 \uc0ac\ub77c\uc84c\ub2e4."
     }
+  },
+  "H8IO": {
+    "players": {
+      "\ubc29\uc7a5": {
+        "submitted": true,
+        "scenario": "\u3147\u3134\u3147\u313b\u3134\u3147",
+        "situation": "\ub208\ub36e\uc778 \uc0b0\uc18d\uc5d0 \uace0\ub9bd\ub418\uc5c8\uc2b5\ub2c8\ub2e4.",
+        "survived_count": 0
+      }
+    },
+    "status": "started",
+    "situation": "\ub208\ub36e\uc778 \uc0b0\uc18d\uc5d0 \uace0\ub9bd\ub418\uc5c8\uc2b5\ub2c8\ub2e4.",
+    "result": "",
+    "current_round": 2,
+    "total_rounds": 2,
+    "results": {
+      "1": "[GPT \uc624\ub958] Connection error.",
+      "2": "[GPT \uc624\ub958] Connection error."
+    }
+  },
+  "XKKU": {
+    "players": {
+      "\ucb48\ub2c8": {
+        "submitted": true,
+        "scenario": "\ub7f0",
+        "situation": "\ubc14\ub2e4 \ud55c\uac00\uc6b4\ub370\uc11c \uc0c1\uc5b4 \ub5bc\ub97c \ub9cc\ub0ac\uc2b5\ub2c8\ub2e4.",
+        "survived_count": 0
+      }
+    },
+    "status": "started",
+    "situation": "\ubc14\ub2e4 \ud55c\uac00\uc6b4\ub370\uc11c \uc0c1\uc5b4 \ub5bc\ub97c \ub9cc\ub0ac\uc2b5\ub2c8\ub2e4.",
+    "result": "",
+    "current_round": 1,
+    "total_rounds": 3,
+    "results": {
+      "1": "- \ucb48\ub2c8: \uc0ac\ub9dd. \uc0c1\uc5b4\ub4e4\uc774 \uadf8\ub97c \uacf5\uaca9\ud558\ub358 \uc911, \ucb48\ub2c8\ub294 \ubb34\ub150\ubb34\uc0c1\ud558\uac8c '\ub7f0'\uc744 \uc678\ucce4\ub2e4.\n\n\uc774\ub807\uac8c \ud310\ub2e8\ud558\uaca0\uc2b5\ub2c8\ub2e4. \uacc4\uc18d\ud574\uc11c \ub2e4\ub978 \ud50c\ub808\uc774\uc5b4\ub4e4\uc758 \uc0c1\ud669\uc744 \uc54c\ub824\uc8fc\uc138\uc694."
+    }
+  },
+  "400J": {
+    "players": {
+      "\ubc29\uc7a5": {
+        "submitted": true,
+        "scenario": "\ub3c4\ub9dd\uce5c\ub2e4@!",
+        "situation": "\uac74\ubb3c\uc5d0 \ubd88\uc774 \ub0ac\uc2b5\ub2c8\ub2e4."
+      }
+    },
+    "status": "started",
+    "situation": "\uac74\ubb3c\uc5d0 \ubd88\uc774 \ub0ac\uc2b5\ub2c8\ub2e4.",
+    "result": "",
+    "current_round": 1,
+    "total_rounds": 2
+  },
+  "NACC": {
+    "players": {
+      "\ubc29\uc7a5": {
+        "submitted": true,
+        "scenario": "\uc624\uc789?",
+        "situation": "\ubc14\ub2e4 \ud55c\uac00\uc6b4\ub370\uc11c \uc0c1\uc5b4 \ub5bc\ub97c \ub9cc\ub0ac\uc2b5\ub2c8\ub2e4."
+      }
+    },
+    "status": "started",
+    "situation": "\ubc14\ub2e4 \ud55c\uac00\uc6b4\ub370\uc11c \uc0c1\uc5b4 \ub5bc\ub97c \ub9cc\ub0ac\uc2b5\ub2c8\ub2e4.",
+    "result": "",
+    "current_round": 2,
+    "total_rounds": 2,
+    "host": "\ubc29\uc7a5"
+  },
+  "HHL5": {
+    "players": {
+      "\ubc29\uc7a5": {
+        "submitted": true,
+        "scenario": "\uce5c\uad6c\uac00 \ub41c\ub2e4",
+        "situation": "\ub85c\ubd07\uc774 \ubc18\ub780\uc744 \uc77c\uc73c\ucf30\uc2b5\ub2c8\ub2e4."
+      }
+    },
+    "status": "started",
+    "situation": "\ub85c\ubd07\uc774 \ubc18\ub780\uc744 \uc77c\uc73c\ucf30\uc2b5\ub2c8\ub2e4.",
+    "result": "",
+    "current_round": 2,
+    "total_rounds": 2,
+    "host": "\ubc29\uc7a5"
+  },
+  "RXRE": {
+    "players": {
+      "\ubc29\uc7a5": {
+        "submitted": true,
+        "scenario": "\uc820\uc7a5",
+        "situation": "\uc6b0\uc8fc\uc120 \uc0b0\uc18c\uac00 \uace0\uac08\ub418\uace0 \uc788\uc2b5\ub2c8\ub2e4."
+      }
+    },
+    "status": "started",
+    "situation": "\uc6b0\uc8fc\uc120 \uc0b0\uc18c\uac00 \uace0\uac08\ub418\uace0 \uc788\uc2b5\ub2c8\ub2e4.",
+    "result": "",
+    "current_round": 2,
+    "total_rounds": 2,
+    "host": "\ubc29\uc7a5",
+    "result_index": 0
+  },
+  "ILJU": {
+    "players": {
+      "\ubc29\uc7a5": {
+        "submitted": true,
+        "scenario": "\uc9dc\uc794 \ub180\ub798\ud0a8\ub2e4",
+        "situation": "\uc0ac\uc790\uac00 \ucad3\uc544\uc624\uace0 \uc788\uc2b5\ub2c8\ub2e4."
+      }
+    },
+    "status": "started",
+    "situation": "\uc0ac\uc790\uac00 \ucad3\uc544\uc624\uace0 \uc788\uc2b5\ub2c8\ub2e4.",
+    "result": "",
+    "current_round": 2,
+    "total_rounds": 2,
+    "host": "\ubc29\uc7a5",
+    "result_index": 0
   }
 }

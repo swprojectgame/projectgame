@@ -49,9 +49,15 @@ def join_room(code, name):
                 "scenario": "",
                 "situation": ""
             }
+
+            # ✅ 방장이 없으면 첫 참가자를 host로 설정
+            if "host" not in rooms[code]:
+                rooms[code]["host"] = name
+
             save_rooms(rooms)
         return True
     return False
+
 
 # 👥 현재 플레이어 목록 반환
 def get_players(code):

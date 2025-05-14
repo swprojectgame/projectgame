@@ -1,9 +1,10 @@
 import streamlit as st
 from view.ui.bg import bg2, bg_cl  # type: ignore
-from logic.game_flow import generate_result, get_result, reset_submissions
+from logic.game_flow import generate_result, reset_submissions
 from logic.utils import get_different_situation
 from logic.room_manager import assign_situation, load_rooms, save_rooms
 from view.language import get_text
+from streamlit_autorefresh import st_autorefresh
 
 def a5():
     bg_cl()
@@ -11,41 +12,63 @@ def a5():
     st.title(get_text("title_result"))
 
     code = st.session_state.room_code
+    name = st.session_state.player_name
     rooms = load_rooms()
 
-    # ✅ 무조건 최신 결과 생성 → survived_count 업데이트 보장
-    result = generate_result(code)
-
+    result_data = rooms[code].get("result", {})
+    order = rooms[code].get("result_order", [])
+    index = rooms[code].get("result_index", 0)
     current_round = rooms[code].get("current_round", 1)
-    max_round = rooms[code].get("total_rounds", 3)
+    total_rounds = rooms[code].get("total_rounds", 3)
 
-    st.markdown(get_text("round_status", current=current_round, total=max_round))
-    st.subheader(get_text("result_heading"))
-    st.text_area("", result, height=300)
+    # ✅ GPT 결과 없으면 방장이 생성
+    if not result_data:
+        if name == rooms[code].get("host"):
+            generate_result(code)
+            rooms = load_rooms()
+        else:
+            st.info("AI가 결과를 생성하고 있어요. 잠시만 기다려주세요.")
+            st_autorefresh(interval=2000, key="waiting_result")
+            return
 
-    if current_round >= max_round:
-        st.success(get_text("game_end"))
-        if st.button(get_text("game_over")):
-            st.session_state.page = "end"
-            st.rerun()
+    # ✅ 플레이어별 결과 출력
+    if index < len(order):
+        current_player = order[index]
+        result_entry = result_data.get(current_player, {})
+        st.markdown(f"**{current_player}**의 결과:")
+        st.text_area("AI 응답", result_entry.get("text", "결과 없음"), height=200, label_visibility="collapsed")
+
+        # ✅ 방장만 "다음 결과 보기" 가능
+        if name == rooms[code].get("host"):
+            if st.button(get_text("next_result"), key="next_result_btn"):
+                if index < len(order) - 1:
+                    rooms[code]["result_index"] += 1
+                    save_rooms(rooms)
+                    st.rerun()  # ✅ 중간에만 rerun
+            else:
+                st.info("이미 마지막 결과입니다.")
+
+        else:
+            st_autorefresh(interval=2000, key="watching_result")
+
+    # ✅ 모든 결과 출력 완료
     else:
-        if st.button(get_text("next_round")):
-            current_situation = rooms[code].get("situation", "")
-            new_situation = get_different_situation(current_situation)
-            assign_situation(code, new_situation)
-            reset_submissions(code)
-            rooms[code]["current_round"] = current_round + 1
-            save_rooms(rooms)
+        st.success("모든 플레이어의 결과를 확인했습니다.")
 
-            st.session_state.page = "scenario"
-            st.rerun()
-
-    # 🔹 라운드 선택 UI 숨기기
-    st.markdown("""
-    <style>
-    div.stNumberInput, p:contains("진행할 라운드 수를 선택하세요"),
-    div:contains("라운드"), p:contains("라운드") {
-        display: none !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+        if name == rooms[code].get("host"):
+            if current_round >= total_rounds:
+                if st.button(get_text("game_over")):
+                    st.session_state.page = "end"
+                    st.rerun()
+            else:
+                if st.button(get_text("next_round")):
+                    new_situation = get_different_situation(rooms[code].get("situation", ""))
+                    assign_situation(code, new_situation)
+                    reset_submissions(code)
+                    rooms[code]["current_round"] += 1
+                    rooms[code]["result_index"] = 0  # 인덱스 초기화
+                    save_rooms(rooms)
+                    st.session_state.page = "scenario"
+                    st.rerun()
+        else:
+            st_autorefresh(interval=2000, key="wait_next_round")

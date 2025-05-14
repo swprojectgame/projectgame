@@ -26,64 +26,69 @@ def generate_result(code):
     if code not in rooms:
         return None
 
-    current_round = rooms[code].get("current_round", 1)
+    # ✅ 이미 결과가 있으면 다시 호출 안 함
+    if "result" in rooms[code]:
+        return True
 
-    # ✅ 중복 호출 방지
-    if str(current_round) in rooms[code].get("results", {}):
-        return rooms[code]["results"][str(current_round)]
-
-    print(f"🚨 GPT 호출됨 for round {current_round}")
-
-    # 🔹 언어 설정에 따라 프롬프트 구성
+    players = rooms[code]["players"]
+    prompt = ""
     language = st.session_state.get("language", "ko")
 
-    if language == "en":
-        prompt = (
-            "You are a fair and creative judge in a life-or-death game.\n"
-            "Below are how each player responded to their situation:\n\n"
-        )
-    else:
-        prompt = (
-            "당신은 공정하고 창의적인 죽음의 심판관입니다.\n"
-            "다음은 플레이어들이 위기 상황에 대응한 요약입니다:\n\n"
-        )
+    # 🔹 모든 행동 요약 프롬프트 구성
+    for name, p in players.items():
+        situation = p.get("situation", "")
+        scenario = p.get("scenario", "")
+        prompt += f"- {name}: {situation} → {scenario}\n"
 
-    # 🔸 상황 요약 입력 (간결하게)
-    for name, player in rooms[code]["players"].items():
-        situation = player.get("situation", "")
-        action = player.get("scenario", "")
-        prompt += f"- {name}: {situation} → {action}\n"
-
-    # 🔸 출력 포맷 지시 (GPT에게 명확하게)
+    # 🔸 지시문 추가 (언어별)
     if language == "en":
         prompt += (
-            "\n\nPlease determine whether each player survived or died in a humorous and dramatic way.\n"
-            "Format the result like this:\n"
-            "- James: Died. The shotgun was fake...\n"
-            "- Minji: Survived. Her trap caught the lion just in time!\n"
+            "\n\nDescribe this strategy as a concise story with a hint of fiction. "
+            "Keep it under 200 characters and clearly state at the end whether the player survived or died."
         )
     else:
         prompt += (
-            "\n\n각 플레이어의 생존 여부를 유머러스하고 극적으로 판단해 주세요.\n"
-            "결과는 다음과 같이 출력합니다:\n"
-            "- 제임스: 사망. 샷건은 가짜였다...\n"
-            "- 민지: 생존. 미리 설치해둔 덫이 사자를 잡았다!\n"
+            "\n\n이 전략에 대해 약간의 허구를 가미한 간결한 이야기 형식으로 설명해줘. "
+            "분량은 200자 내외로 제한하고, 이야기 마지막 줄에는 반드시 생존인지 사망인지 한 줄로 명확히 판단해서 적어줘."
         )
 
     try:
-        result_text = generate_response(prompt)
+        response = generate_response(prompt)
     except Exception as e:
-        result_text = f"[GPT 오류] {e}"
+        response = f"[GPT 오류] {e}"
 
-    # 🔹 결과 저장
-    if "results" not in rooms[code]:
-        rooms[code]["results"] = {}
-    rooms[code]["results"][str(current_round)] = result_text
+    # ✅ 결과 파싱
+    result_data = {}
+    for name in players:
+        if language == "en":
+            pattern = re.compile(rf"{re.escape(name)}.*?(survived|died)", re.IGNORECASE)
+        else:
+            pattern = re.compile(rf"{re.escape(name)}.*?(생존|사망)", re.IGNORECASE)
 
-    update_survival_records(rooms, code, result_text)  # ✅ 수정된 rooms 전달
+        match = pattern.search(response)
+        survived = False
+        if match:
+            status = match.group(1).lower()
+            if status in ["생존", "survived"]:
+                survived = True
+        result_data[name] = {
+            "text": response,  # 전체 응답 저장
+            "survived": survived
+        }
+
+        # 생존 누적 처리
+        if "survived_count" not in players[name]:
+            players[name]["survived_count"] = 0
+        if survived:
+            players[name]["survived_count"] += 1
+
+    # ✅ 결과 저장
+    rooms[code]["result"] = result_data
+    rooms[code]["result_order"] = list(players.keys())
+    rooms[code]["result_index"] = 0
     save_rooms(rooms)
+    return True
 
-    return result_text
 
 # ✅ 저장된 결과 불러오기
 def get_result(code):
