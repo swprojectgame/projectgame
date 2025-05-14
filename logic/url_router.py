@@ -15,9 +15,6 @@ def handle_url_params():
 
     # ✅ 방 코드와 이름이 모두 있고, 아직 방에 들어간 상태가 아니라면 자동 입장 처리
     if room and name and "room_code" not in st.session_state:
-        # 디버깅 로그 출력
-        st.write("🧪 [join_room] room_code =", room)
-        st.write("🧪 [join_room] player_name =", name)
 
         # 🚪 join_room() 함수로 서버에 입장 시도
         joined = join_room(room, name)
