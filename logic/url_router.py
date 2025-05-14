@@ -13,10 +13,6 @@ def handle_url_params():
     room = normalize_param(params.get("room"))  # 방 코드
     name = normalize_param(params.get("name"))  # 플레이어 이름
 
-    # 🐞 디버깅용 로그 출력
-    st.write("🛠️ [디버깅] room (raw):", repr(room))
-    st.write("🛠️ [디버깅] name (raw):", repr(name))
-
     # ✅ 방 코드와 이름이 모두 있고, 아직 방에 들어간 상태가 아니라면 자동 입장 처리
     if room and name and "room_code" not in st.session_state:
         # 디버깅 로그 출력
