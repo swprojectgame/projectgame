@@ -1,7 +1,7 @@
 from logic.room_manager import load_rooms, save_rooms
 from api.ai_api import generate_response
-import streamlit as st
 import re
+import streamlit as st
 
 # ✅ 유저가 행동을 제출
 def submit_scenario(code, name, scenario):
@@ -20,113 +20,101 @@ def check_all_submitted(code):
         return all(p.get("submitted", False) for p in rooms[code]["players"].values())
     return False
 
-# ✅ 결과 생성 (GPT 호출) + 라운드별 결과 저장
+# ✅ 결과 생성 (플레이어별 GPT 호출 + 중복 호출 방지)
 def generate_result(code):
     rooms = load_rooms()
     if code not in rooms:
         return None
-
-    # ✅ 이미 결과가 있으면 다시 호출 안 함
-    if "result" in rooms[code]:
-        return True
-
+    
     players = rooms[code]["players"]
-    prompt = ""
-    language = st.session_state.get("language", "ko")
 
-    # 🔹 모든 행동 요약 프롬프트 구성
-    for name, p in players.items():
-        situation = p.get("situation", "")
-        scenario = p.get("scenario", "")
-        prompt += f"- {name}: {situation} → {scenario}\n"
+    # ✅ 문자열(str)일 경우도 대비해 딕셔너리로 강제 초기화
+    if not isinstance(rooms[code].get("result"), dict):
+        rooms[code]["result"] = {}
+    result_data = rooms[code]["result"]
 
-    # 🔸 지시문 추가 (언어별)
-    if language == "en":
-        prompt += (
-            "\n\nDescribe this strategy as a concise story with a hint of fiction. "
-            "Keep it under 200 characters and clearly state at the end whether the player survived or died."
-        )
-    else:
-        prompt += (
-            "\n\n이 전략에 대해 약간의 허구를 가미한 간결한 이야기 형식으로 설명해줘. "
-            "분량은 200자 내외로 제한하고, 이야기 마지막 줄에는 반드시 생존인지 사망인지 한 줄로 명확히 판단해서 적어줘."
-        )
+    for name, player in players.items():
+        if name in result_data:  # ✅ 이미 생성된 결과가 있으면 건너뜀
+            continue
 
-    try:
-        response = generate_response(prompt)
-    except Exception as e:
-        response = f"[GPT 오류] {e}"
+        situation = player.get("situation", "")
+        scenario = player.get("scenario", "")
+        language = st.session_state.get("language", "ko")
 
-    # ✅ 결과 파싱
-    result_data = {}
-    for name in players:
         if language == "en":
-            pattern = re.compile(rf"{re.escape(name)}.*?(survived|died)", re.IGNORECASE)
+            prompt = (
+                f"Situation: {situation}\n"
+                f"Strategy by {name}: {scenario}\n\n"
+                "Describe this strategy as a short fictional story (max 200 characters), and clearly state at the end whether they survived or died."
+            )
         else:
-            pattern = re.compile(rf"{re.escape(name)}.*?(생존|사망)", re.IGNORECASE)
+            prompt = (
+                f"상황: {situation}\n"
+                f"플레이어 {name}의 전략: {scenario}\n\n"
+                "이 전략에 대해 약간의 허구를 가미한 간결한 이야기 형식으로 설명해줘. "
+                "분량은 200자 내외로 제한하고, 이야기 마지막 줄에는 반드시 생존인지 사망인지 한 줄로 명확히 판단해서 적어줘."
+            )
 
-        match = pattern.search(response)
-        survived = False
-        if match:
-            status = match.group(1).lower()
-            if status in ["생존", "survived"]:
-                survived = True
-        result_data[name] = {
-            "text": response,  # 전체 응답 저장
-            "survived": survived
-        }
+        try:
+            response = generate_response(prompt)
+        except Exception as e:
+            response = f"[GPT 오류] {e}"
 
-        # 생존 누적 처리
-        if "survived_count" not in players[name]:
-            players[name]["survived_count"] = 0
-        if survived:
-            players[name]["survived_count"] += 1
+        result_data[name] = response
 
-    # ✅ 결과 저장
-    rooms[code]["result"] = result_data
     rooms[code]["result_order"] = list(players.keys())
     rooms[code]["result_index"] = 0
+
+    update_survival_records(rooms, code, result_data)
     save_rooms(rooms)
     return True
 
-
-# ✅ 저장된 결과 불러오기
+# ✅ 결과 가져오기 (현재 인덱스 기준)
 def get_result(code):
     rooms = load_rooms()
-    current_round = rooms[code].get("current_round", 1)
-    return rooms[code].get("results", {}).get(str(current_round), "")
+    index = rooms[code].get("result_index", 0)
+    order = rooms[code].get("result_order", [])
+    result = rooms[code].get("result", {})
+    if index < len(order):
+        current_name = order[index]
+        return current_name, result.get(current_name, "결과 없음")
+    return None, "모든 결과가 출력되었습니다."
 
-# ✅ 제출 상태 초기화
+# ✅ 다음 결과로 넘기기 (방장이 호출)
+def next_result(code):
+    rooms = load_rooms()
+    if code in rooms:
+        if "result_index" not in rooms[code]:
+            rooms[code]["result_index"] = 0
+        rooms[code]["result_index"] += 1
+        save_rooms(rooms)
+
+# ✅ 제출 상태 초기화 (라운드 진행 시 사용)
 def reset_submissions(code):
     rooms = load_rooms()
     if code in rooms:
-        for p in rooms[code]["players"].values():
-            p["submitted"] = False
-            p["scenario"] = ""
+        for player in rooms[code]["players"].values():
+            player["submitted"] = False
+            player["scenario"] = ""
+            player["situation"] = ""  # 🔥 초기화 유지
         save_rooms(rooms)
 
-# ✅ 결과 텍스트를 파싱하여 생존 여부 판단 및 기록
-def update_survival_records(rooms, code, result_text):  # ✅ rooms 인자로 받음
-    normalized_text = result_text.replace("\n", " ").replace("\r", " ")
-    print(f"📦 생존 판단 시작\n{normalized_text}\n")
+# ✅ 생존 여부 파악 및 누적
+def update_survival_records(rooms, code, result_data):
+    for name, text in result_data.items():
+        normalized = text.replace("\n", " ").replace("\r", " ")
+        pattern = re.compile(rf"{re.escape(name)}.*?(생존|survived|Survived)", re.IGNORECASE)
+        survived = bool(pattern.search(normalized))
 
-    for player_name in rooms[code]["players"]:
-        pattern = re.compile(rf"{re.escape(player_name)}.*?(생존|survived|Survived)", re.IGNORECASE)
-        survived = bool(pattern.search(normalized_text))
-        print(f"🔍 {player_name} → 생존 판정: {survived}")
-
-        if "survived_count" not in rooms[code]["players"][player_name]:
-            rooms[code]["players"][player_name]["survived_count"] = 0
+        if "survived_count" not in rooms[code]["players"][name]:
+            rooms[code]["players"][name]["survived_count"] = 0
 
         if survived:
-            rooms[code]["players"][player_name]["survived_count"] += 1
-            print(f"✅ {player_name} survived_count += 1 → {rooms[code]['players'][player_name]['survived_count']}")
+            rooms[code]["players"][name]["survived_count"] += 1
 
-    print("💾 저장 준비 완료 (상위에서 save_rooms 실행)")
-
-# ✅ 생존 횟수 조회
-def get_survival_count(code, player_name):
+# ✅ 생존 횟수 가져오기
+def get_survival_count(code, name):
     rooms = load_rooms()
-    if code in rooms and player_name in rooms[code]["players"]:
-        return rooms[code]["players"][player_name].get("survived_count", 0)
+    if code in rooms and name in rooms[code]["players"]:
+        return rooms[code]["players"][name].get("survived_count", 0)
     return 0

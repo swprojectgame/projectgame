@@ -1,74 +1,100 @@
 import streamlit as st
+from streamlit_autorefresh import st_autorefresh
 from view.ui.bg import bg2, bg_cl  # type: ignore
-from logic.game_flow import generate_result, reset_submissions
+from logic.game_flow import generate_result, next_result, reset_submissions
 from logic.utils import get_different_situation
 from logic.room_manager import assign_situation, load_rooms, save_rooms
 from view.language import get_text
-from streamlit_autorefresh import st_autorefresh
 
 def a5():
-    bg_cl()
-    bg2("https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmE3bTEyMW01bnltaGVyeTR4OXNlcDkxYWpndjhsamN0Nzg2Njk5cyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/kg19fN5BXbZGIDznzG/giphy.gif")
-    st.title(get_text("title_result"))
-
     code = st.session_state.room_code
     name = st.session_state.player_name
     rooms = load_rooms()
 
-    result_data = rooms[code].get("result", {})
-    order = rooms[code].get("result_order", [])
-    index = rooms[code].get("result_index", 0)
-    current_round = rooms[code].get("current_round", 1)
-    total_rounds = rooms[code].get("total_rounds", 3)
+    # ✅ 방장이 아닐 때만 자동 새로고침 실행
+    if name != rooms[code].get("host"):
+        st_autorefresh(interval=2000, key="auto_refresh")
 
-    # ✅ GPT 결과 없으면 방장이 생성
-    if not result_data:
+    bg_cl()
+    bg2("https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmE3bTEyMW01bnltaGVyeTR4OXNlcDkxYWpndjhsamN0Nzg2Njk5cyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/kg19fN5BXbZGIDznzG/giphy.gif")
+    st.title(get_text("title_result"))
+
+    if "room_code" not in st.session_state or "player_name" not in st.session_state:
+        st.error("세션 정보가 없습니다. 다시 시작해주세요.")
+        st.stop()
+
+    # ✅ 결과가 없으면 방장이 생성
+    if (
+        "result" not in rooms[code]
+        or not isinstance(rooms[code]["result"], dict)
+        or not all(p in rooms[code]["result"] for p in rooms[code]["players"])
+        or "result_index" not in rooms[code]
+        or "result_order" not in rooms[code]
+    ):
         if name == rooms[code].get("host"):
             generate_result(code)
             rooms = load_rooms()
         else:
-            st.info("AI가 결과를 생성하고 있어요. 잠시만 기다려주세요.")
-            st_autorefresh(interval=2000, key="waiting_result")
-            return
+            st.info("AI가 판단 중입니다... 방장이 결과를 생성하면 곧 표시됩니다.")
+            st.stop()
 
-    # ✅ 플레이어별 결과 출력
-    if index < len(order):
-        current_player = order[index]
-        result_entry = result_data.get(current_player, {})
-        st.markdown(f"**{current_player}**의 결과:")
-        st.text_area("AI 응답", result_entry.get("text", "결과 없음"), height=200, label_visibility="collapsed")
+    # ✅ 현재 결과 출력
+    result_index = rooms[code].get("result_index", 0)
+    result_order = rooms[code].get("result_order", [])
+    result_data = rooms[code].get("result", {})
 
-        # ✅ 방장만 "다음 결과 보기" 가능
+    if result_index < len(result_order):
+        current_name = result_order[result_index]
+        current_result = result_data.get(current_name, "결과 없음")
+
+        st.markdown(get_text("result_heading"))
+        with st.container():
+            st.markdown(f"### 🧑‍💼 {current_name}의 결과", unsafe_allow_html=True)
+            st.markdown(
+                f"<div style='padding: 1rem; background-color: #f5f5f5; border-radius: 10px; "
+                f"border: 1px solid #ccc; color: black; font-size: 16px; line-height: 1.6;'>"
+                f"{current_result.replace(chr(10), '<br>')}"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+
         if name == rooms[code].get("host"):
-            if st.button(get_text("next_result"), key="next_result_btn"):
-                if index < len(order) - 1:
-                    rooms[code]["result_index"] += 1
-                    save_rooms(rooms)
-                    st.rerun()  # ✅ 중간에만 rerun
-            else:
-                st.info("이미 마지막 결과입니다.")
-
+            if st.button("다음 플레이어 결과 보기"):
+                next_result(code)
+                st.rerun()
         else:
-            st_autorefresh(interval=2000, key="watching_result")
+            st.markdown("<p style='color: gray;'>방장이 결과를 넘기면 자동으로 다음 결과가 표시됩니다.</p>", unsafe_allow_html=True)
 
-    # ✅ 모든 결과 출력 완료
     else:
-        st.success("모든 플레이어의 결과를 확인했습니다.")
+        st.success("모든 플레이어 결과 확인 완료!")
 
         if name == rooms[code].get("host"):
-            if current_round >= total_rounds:
-                if st.button(get_text("game_over")):
-                    st.session_state.page = "end"
-                    st.rerun()
-            else:
-                if st.button(get_text("next_round")):
-                    new_situation = get_different_situation(rooms[code].get("situation", ""))
+            if st.button("다음 라운드로 이동"):
+                current_round = rooms[code].get("current_round", 1)
+                max_round = rooms[code].get("total_rounds", 3)
+
+                if current_round >= max_round:
+                    rooms[code]["page"] = "end"
+                else:
+                    current_situation = rooms[code].get("situation", "")
+                    new_situation = get_different_situation(current_situation)
                     assign_situation(code, new_situation)
                     reset_submissions(code)
-                    rooms[code]["current_round"] += 1
-                    rooms[code]["result_index"] = 0  # 인덱스 초기화
-                    save_rooms(rooms)
-                    st.session_state.page = "scenario"
-                    st.rerun()
+
+                    # ✅ 결과 제거 및 다음 라운드 준비
+                    rooms[code].pop("result", None)
+                    rooms[code].pop("result_order", None)
+                    rooms[code].pop("result_index", None)
+
+                    rooms[code]["current_round"] = current_round + 1
+                    rooms[code]["page"] = "scenario"
+
+                save_rooms(rooms)
+                st.session_state.page = rooms[code]["page"]  # ✅ 세션 상태 업데이트
+                st.rerun()
+
         else:
-            st_autorefresh(interval=2000, key="wait_next_round")
+            page = rooms[code].get("page")
+            if page:
+                st.session_state.page = page
+                st.rerun()

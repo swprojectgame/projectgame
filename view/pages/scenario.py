@@ -18,7 +18,6 @@ def a3():
 
     rooms = load_rooms()
 
-    # 상황이 비어있으면 랜덤으로 배정
     if "players" in rooms[code] and name in rooms[code]["players"] and rooms[code]["players"][name].get("situation", "") == "":
         from logic.room_manager import assign_situation
         if rooms[code].get("situation", "") == "":
@@ -51,39 +50,7 @@ def a3():
     elapsed = int(time.time() - st.session_state.start_time)
     remaining = max(0, TIME_LIMIT - elapsed)
 
-    st.markdown("""
-    <style>
-    @keyframes blink {
-        0% { opacity: 1; }
-        100% { opacity: 0.4; }
-    }
-    .blinking-bar {
-        animation: blink 1s infinite alternate;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
     st.title(get_text("title_scenario"))
-
-    percent = int((remaining / TIME_LIMIT) * 100)
-    blink_class = "blinking-bar" if remaining < 10 else ""
-    bar_html = f"""
-    <div style="background-color:#eee; border-radius:10px; height:20px; width:100%; margin-bottom: 20px;">
-        <div class="{blink_class}" style="
-            width:{percent}% ;
-            background-color:#ff4d4d;
-            height:100%;
-            border-radius:10px;
-            transition: width 1s linear;
-        "></div>
-    </div>
-    """
-    st.markdown(bar_html, unsafe_allow_html=True)
-
-    st.markdown(f"<h1 style='text-align: center; font-size: 72px; color: black;'>{remaining}</h1>", unsafe_allow_html=True)
-
-    if current_situation == "":
-        current_situation = get_text("situation_missing")
 
     st.markdown(get_text("current_situation", situation=current_situation))
 
@@ -91,27 +58,18 @@ def a3():
     user_input = st.text_area(get_text("action_input"), key=input_key, value=st.session_state.user_input, max_chars=MAX_LENGTH)
     st.session_state.user_input = user_input
 
-    char_count = len(user_input)
-    st.markdown(f"<div style='text-align: right; font-size: 14px; color: #888;'>{char_count} / {MAX_LENGTH}자</div>", unsafe_allow_html=True)
-
     if st.button(get_text("submit")):
         if user_input.strip():
-            submit_scenario(code, name, user_input.strip())
-            st.session_state.page = "prompt"
-            st.rerun()
+            success = submit_scenario(code, name, user_input.strip())
+            if success:
+                st.session_state.page = "prompt"
+                st.rerun()
+            else:
+                st.warning("제출 실패. 다시 시도해주세요.")
 
     if remaining == 0 and not user_input.strip():
         st.session_state.page = "result"
         st.rerun()
-
-    st.markdown("""
-    <style>
-    div.stNumberInput, p:contains("진행할 라운드 수를 선택하세요"),
-    div:contains("라운드"), p:contains("라운드") {
-        display: none !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
 
     if remaining > 0:
         time.sleep(1)

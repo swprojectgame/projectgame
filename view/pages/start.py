@@ -32,10 +32,11 @@ def a1():
 
     if st.session_state.mode == "create":
         if nickname:
-            room_code = create_room()
+            room_code = create_room(nickname)
             st.session_state.create_message = get_text("room_created", code=room_code)
             st.session_state.room_code = room_code
-
+            st.session_state.player_name = nickname  # ✅ 이 줄 위치도 중요
+            
             if join_room(room_code, nickname):
                 st.session_state.player_name = nickname
                 st.session_state.page = "lobby"

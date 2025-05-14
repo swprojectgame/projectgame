@@ -23,13 +23,20 @@ def save_rooms(rooms):
         json.dump(rooms, f, indent=2)
 
 # 🏗 방 생성 (중복 없는 랜덤 코드)
-def create_room(rounds=3):
+def create_room(host_name, rounds=3):
     rooms = load_rooms()
     while True:
         code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
         if code not in rooms:
             rooms[code] = {
-                "players": {},
+                "host": host_name,  # ✅ 방장 이름 저장
+                "players": {
+                    host_name: {
+                        "submitted": False,
+                        "scenario": "",
+                        "situation": ""
+                    }
+                },
                 "status": "waiting",
                 "situation": "",
                 "result": "",
@@ -38,6 +45,7 @@ def create_room(rounds=3):
             }
             save_rooms(rooms)
             return code
+
 
 # 🚪 플레이어가 방에 입장
 def join_room(code, name):
@@ -49,15 +57,9 @@ def join_room(code, name):
                 "scenario": "",
                 "situation": ""
             }
-
-            # ✅ 방장이 없으면 첫 참가자를 host로 설정
-            if "host" not in rooms[code]:
-                rooms[code]["host"] = name
-
             save_rooms(rooms)
         return True
     return False
-
 
 # 👥 현재 플레이어 목록 반환
 def get_players(code):
