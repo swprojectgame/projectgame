@@ -10,6 +10,13 @@ def a5():
     code = st.session_state.room_code
     name = st.session_state.player_name
     rooms = load_rooms()
+    
+    # 🆕 아래 코드 추가 (result_index 아래)
+    if name != rooms[code].get("host"):
+        current_page = rooms[code].get("page")
+        if current_page and current_page != "result":
+            st.session_state.page = current_page
+            st.rerun()
 
     # ✅ 방장이 아닐 때만 자동 새로고침 실행
     if name != rooms[code].get("host"):
@@ -63,7 +70,8 @@ def a5():
                 next_result(code)
                 st.rerun()
         else:
-            st.markdown("<p style='color: gray;'>방장이 결과를 넘기면 자동으로 다음 결과가 표시됩니다.</p>", unsafe_allow_html=True)
+            st.markdown(
+                "<p style='color: gray;'>방장이 결과를 넘기면 자동으로 다음 결과가 표시됩니다.</p>", unsafe_allow_html=True)
 
     else:
         st.success("모든 플레이어 결과 확인 완료!")
