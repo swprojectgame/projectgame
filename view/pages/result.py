@@ -1,110 +1,72 @@
 import streamlit as st
-import random
-from openai import OpenAI
 from view.ui.bg import bg2, bg_cl  # type: ignore
-from view.language import get_text  # 다국어 함수 import
-
-client = OpenAI(api_key="sk-proj-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-
-scenario = st.session_state.get("scenario")
-strategies = st.session_state.get("input_survive")
-
-def generate_outcome(scenario, strategies):
-    outcomes = {}
-
-    for player, strat in strategies.items():
-        survived = random.random() < 0.3
-        outcomes[player] = {
-            "strategy": strat,
-            "result": get_text("survived") if survived else get_text("died")
-        }
-
-    st.session_state["survival_result"] = {
-        player: (data["result"] == get_text("survived")) for player, data in outcomes.items()
-    }
-
-    strategy_text = "\n".join(
-        [f"{name}: {data['strategy']} -> {data['result']}"
-         for name, data in outcomes.items()]
-    )
-
-    prompt = f"""
-시나리오:
-{scenario}
-
-각 플레이어는 아래와 같은 생존 전략을 제출했습니다. 이 전략에 대해 약간의 허구와 반전을 섞어 간결한 이야기 형식으로 설명하고, 누가 생존했는지 알려주세요.
-
-전략 목록:
-{strategy_text}
-
-결과를 다음과 같은 형식으로 작성해주세요:
-
-[플레이어명] - 이야기 + ({get_text("survived")} or {get_text("died")})
-    """
-
-    response = client.chat.completions.create(
-        model="gpt-4",
-        messages=[{
-            "role": "user",
-            "content": prompt
-        }],
-        temperature=0.9
-    )
-
-    return response.choices[0].message.content.strip()
-
+from logic.game_flow import generate_result, get_result, reset_submissions, update_survival_records
+from logic.room_manager import load_rooms, save_rooms
+from view.language import get_text
 
 def a5():
     bg_cl()
     bg2("https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmE3bTEyMW01bnltaGVyeTR4OXNlcDkxYWpndjhsamN0Nzg2Njk5cyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/kg19fN5BXbZGIDznzG/giphy.gif")
-
+    
+    # 영어로 표시되도록 언어 설정
+    if "language" not in st.session_state:
+        st.session_state.language = "en"
+    
     st.title(get_text("title_result"))
 
-    players = st.session_state.get("players", [])
-    survival_strategies = st.session_state.get("input_survive", {})
+    code = st.session_state.room_code
+    rooms = load_rooms()
 
-    if not players or not survival_strategies:
-        st.warning(get_text("warning_empty"))
-        return
+    # 🔢 현재 라운드 / 총 라운드 수
+    current_round = rooms[code].get("current_round", 1)
+    max_round = rooms[code].get("total_rounds", 3)
+    
+    # ✅ 결과 불러오기 또는 생성
+    result_data = get_result(code)
+    if not result_data:
+        result_data = generate_result(code)
 
-    if "gpt_result" not in st.session_state:
-        gpt_response = generate_outcome(scenario, strategies)
-        st.session_state["gpt_result"] = gpt_response
-        st.session_state["current_line"] = 0
+    # 튜플로 반환될 경우 처리
+    if isinstance(result_data, tuple):
+        result = result_data[0] or "결과가 없습니다."
+    else:
+        result = result_data
 
-    lines = [line.strip() for line in st.session_state["gpt_result"].split("\n") if line.strip()]
-    current_index = st.session_state.get("current_line", 0)
+    # ✅ 결과 표시
+    st.subheader(get_text("result_heading"))
+    st.text_area("", result, height=300)
 
-    if current_index < len(players):
-        current_player = players[current_index]
-        st.subheader(f"{current_player} {get_text('action_input')}")
-        st.markdown(survival_strategies.get(current_player, get_text("warning_empty")))
+    # ✅ 플레이어들의 생존 전략 표시
+    st.subheader(get_text("submitted_strategies"))
+    players = rooms[code]["players"]
+    for player_name, player_data in players.items():
+        strategy = player_data.get("strategy", get_text("no_strategy"))
+        st.markdown(f"**{player_name}**: {strategy}")
 
-        if current_index < len(lines):
-            st.text(lines[current_index])
+    # 라운드 정보 표시
+    st.subheader(f"Round {current_round}/{max_round}")
 
-        if st.button(get_text("next")):
-            st.session_state["current_line"] += 1
+    # ✅ 마지막 라운드일 경우: 종료 안내 및 버튼 제공
+    if current_round >= max_round:
+        st.success(get_text("game_end"))
+        if st.button(get_text("game_over")):
+            if result:
+                update_survival_records(code, result)
+            st.session_state.page = "end"
             st.rerun()
     else:
-        st.subheader(get_text("results_title"))
-        survival_result = st.session_state.get("survival_result", {})
-
-        for player, survived in survival_result.items():
-            status = f"{get_text('survived')} 😎" if survived else f"{get_text('died')} 💀"
-            st.markdown(f"**{player} {status}**")
-
         if st.button(get_text("next_round")):
-            st.session_state["play_count"] = st.session_state.get("play_count", 1) + 1
-            total_rounds = st.session_state.get("total_rounds", 3)
+            if result:
+                update_survival_records(code, result)
+            
+            # 현재 라운드 결과가 제대로 저장되었는지 확인
+            rooms = load_rooms()
+            rooms[code]["current_round"] = current_round + 1
+            save_rooms(rooms)
 
-            if st.session_state["play_count"] >= total_rounds:
-                st.session_state.page = "end"
-            else:
-                st.session_state["scenario_writer"] = random.choice(players)
-                st.session_state.page = "scenario"
+            # 제출 상태 초기화
+            reset_submissions(code)
+
+            # 다음 라운드 화면으로 이동
+            st.session_state.page = "scenario"
             st.rerun()
-
-    if st.button(get_text("back_to_lobby")):
-        st.session_state.page = "lobby"
-        st.rerun()
