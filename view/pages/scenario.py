@@ -1,74 +1,116 @@
 import streamlit as st
 import time
 from view.ui.bg import bg2, bg_cl  # type: ignore
-from logic.game_flow import submit_scenario
-from logic.room_manager import load_rooms
+from logic.room_manager import load_rooms, save_rooms
 from logic.utils import get_random_situation, SITUATIONS
 from view.language import get_text
 
-TIME_LIMIT = 45
-MAX_LENGTH = 140
+TIME_LIMIT = 5  # 제한 시간 (초)
+MAX_LENGTH = 140  # 최대 글자 수 제한
 
 def a3():
     bg_cl()
     bg2("https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExNmpqMmZjbXhhNjNqY2NnZjh0OTI2bGVtNzFldGh6c3Fkamh0emVkMiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/PNQi3nT7CVE3JFiRot/giphy.gif")
 
-    code = st.session_state.room_code
-    name = st.session_state.player_name
+    timer_key = "start_time_scenario"
+    if timer_key not in st.session_state:
+        st.session_state[timer_key] = time.time()
 
-    rooms = load_rooms()
-
-    if "players" in rooms[code] and name in rooms[code]["players"] and rooms[code]["players"][name].get("situation", "") == "":
-        from logic.room_manager import assign_situation
-        if rooms[code].get("situation", "") == "":
-            situation = get_random_situation()
-            assign_situation(code, situation)
-            rooms = load_rooms()
-
-    current_situation = rooms[code]["players"][name].get("situation", "")
-    current_round = rooms[code].get("current_round", 1)
-
-    if "last_situation" not in st.session_state:
-        st.session_state.last_situation = ""
-    if "last_round" not in st.session_state:
-        st.session_state.last_round = 0
-
-    if (current_situation != st.session_state.last_situation or 
-        current_round != st.session_state.last_round):
-        if "user_input" in st.session_state:
-            del st.session_state.user_input
-        if "start_time" in st.session_state:
-            del st.session_state.start_time
-        st.session_state.last_situation = current_situation
-        st.session_state.last_round = current_round
-
-    if "start_time" not in st.session_state:
-        st.session_state.start_time = time.time()
-    if "user_input" not in st.session_state:
-        st.session_state.user_input = ""
-
-    elapsed = int(time.time() - st.session_state.start_time)
+    elapsed = int(time.time() - st.session_state[timer_key])
     remaining = max(0, TIME_LIMIT - elapsed)
+
+    st.markdown("""
+    <style>
+    @keyframes blink {
+        0% { opacity: 1; }
+        100% { opacity: 0.4; }
+    }
+    .blinking-bar {
+        animation: blink 1s infinite alternate;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    if "language" not in st.session_state:
+        st.session_state.language = "en"
 
     st.title(get_text("title_scenario"))
 
-    st.markdown(get_text("current_situation", situation=current_situation))
+    code = st.session_state.room_code
+    name = st.session_state.player_name
+    rooms = load_rooms()
+    current_round = rooms[code].get("current_round", 1)
+    host = rooms[code].get("host")
 
-    input_key = f"input_{current_round}_{name}"
-    user_input = st.text_area(get_text("action_input"), key=input_key, value=st.session_state.user_input, max_chars=MAX_LENGTH)
-    st.session_state.user_input = user_input
+    st.subheader(f"Round {current_round}")
 
-    if st.button(get_text("submit")):
-        if user_input.strip():
-            success = submit_scenario(code, name, user_input.strip())
-            if success:
-                st.session_state.page = "prompt"
-                st.rerun()
-            else:
-                st.warning("제출 실패. 다시 시도해주세요.")
+    percent = int((remaining / TIME_LIMIT) * 100)
+    blink_class = "blinking-bar" if remaining < 10 else ""
+    bar_html = f"""
+    <div style="background-color:#eee; border-radius:10px; height:20px; width:100%; margin-bottom: 20px;">
+        <div class="{blink_class}" style="
+            width:{percent}% ;
+            background-color:#ff4d4d;
+            height:100%;
+            border-radius:10px;
+            transition: width 1s linear;
+        "></div>
+    </div>
+    """
+    st.markdown(bar_html, unsafe_allow_html=True)
+    st.markdown(f"<h1 style='text-align: center; font-size: 72px; color: white;'>{remaining}</h1>", unsafe_allow_html=True)
 
-    if remaining == 0 and not user_input.strip():
-        st.session_state.page = "result"
+    # ✅ 방장만 시나리오 작성 가능
+    if name == host:
+        st.markdown(f"<div style='text-align: center; font-size: 18px; color: #555;'>{get_text('input_label_scenario')}</div>", unsafe_allow_html=True)
+
+        if "scenario" not in st.session_state:
+            st.session_state.scenario = ""
+
+        input_key = f"scenario_input_{current_round}_{name}"
+        user_input = st.text_area(
+            get_text("notice"),
+            key=input_key,
+            value=st.session_state.scenario,
+            max_chars=MAX_LENGTH,
+            height=200
+        )
+
+        st.session_state.scenario = user_input
+
+        if st.button(get_text("recommend_button")):
+            st.session_state.scenario = get_random_situation()
+            st.rerun()
+
+        char_count = len(user_input)
+        st.markdown(
+            f"<div style='text-align: right; font-size: 14px; color: #888;'>{char_count} / {MAX_LENGTH}자</div>",
+            unsafe_allow_html=True
+        )
+        st.markdown(f"<div style='color: red; font-weight: bold;'>{get_text('submit_warning')}</div>", unsafe_allow_html=True)
+        st.button(get_text("submit"))  # 클릭은 안 써도 UI용 유지
+
+    else:
+        st.info("방장이 시나리오를 설정 중입니다...")
+
+    # ✅ 타이머 종료 시점에 상황 배포
+    if remaining == 0:
+        if name == host:
+            # 방장이 입력 안 했으면 랜덤
+            if not st.session_state.scenario.strip():
+                st.session_state.scenario = get_random_situation()
+
+            # 방장이 작성한 시나리오 저장
+            rooms[code]["situation"] = st.session_state.scenario
+            save_rooms(rooms)
+
+        # 모든 유저가 host의 상황 받아오기
+        scenario = rooms[code].get("situation", "")
+        rooms[code]["players"][name]["situation"] = scenario
+        st.session_state.player_situation = scenario
+        save_rooms(rooms)
+
+        st.session_state.page = "prompt"
         st.rerun()
 
     if remaining > 0:

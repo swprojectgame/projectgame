@@ -1,78 +1,90 @@
 import streamlit as st
 import time
 from view.ui.bg import bg2, bg_cl  # type: ignore
-from logic.game_flow import check_all_submitted
-from logic.room_manager import load_rooms
+from logic.room_manager import load_rooms, save_rooms
 from view.language import get_text
 
-TIME_LIMIT = 45  # 제한 시간 (초)
-MAX_LENGTH = 140  # 최대 글자 수 제한
+TIME_LIMIT = 5  # 제한 시간 (초)
 
 def a4():
     bg_cl()
     bg2("https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExMTdjNGw4cHE0ZjU2cTFqbGJuM3R6dDBqenlzMTY3aGN3YmpqZ3JrZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l87pZAlTSahSABLNqp/giphy.gif")
 
-    # 🔐 필수 정보
+    if "language" not in st.session_state:
+        st.session_state.language = "en"
+
+    st.title(get_text("survival_strategy"))
+
     code = st.session_state.room_code
     name = st.session_state.player_name
-
-    # 라운드 정보 확인
     rooms = load_rooms()
     current_round = rooms[code].get("current_round", 1)
 
-    # 상태 관리
-    if "phase" not in st.session_state:
-        st.session_state.phase = "input"
-    if "last_round" not in st.session_state:
-        st.session_state.last_round = 0
-    if current_round != st.session_state.last_round:
-        st.session_state.phase = "input"
-        st.session_state.last_round = current_round
+    # ✅ 상황은 rooms에서 직접 가져옴
+    player_situation = rooms[code]["players"][name].get("situation", "")
 
-    # 판단 중 단계
-    if st.session_state.phase == "judging":
-        st.markdown("<h1 style='text-align: center; color: white;'>" + get_text("judging") + "</h1>", unsafe_allow_html=True)
-        time.sleep(3)
-        st.session_state.phase = "finalizing"
-        st.rerun()
+    # 타이머 설정
+    timer_key = "start_time_prompt"
+    if timer_key not in st.session_state:
+        st.session_state[timer_key] = time.time()
 
-    # 결과 전환 단계
-    elif st.session_state.phase == "finalizing":
-        st.markdown("<h1 style='text-align: center; color: white;'>" + get_text("finalizing") + "</h1>", unsafe_allow_html=True)
-        time.sleep(3)
-        st.session_state.page = "result"
-        st.rerun()
+    elapsed = int(time.time() - st.session_state[timer_key])
+    remaining = max(0, TIME_LIMIT - elapsed)
 
-    # 입력 대기 단계
-    elif st.session_state.phase == "input":
-        st.title(get_text("title_prompt"))
-
-        # 제출 여부 체크
-        submitted = False
-        if "players" in rooms[code] and name in rooms[code]["players"]:
-            submitted = rooms[code]["players"][name].get("submitted", False)
-
-        # 제출 안 됐는데 이 페이지에 온 경우 복구
-        if not submitted and st.session_state.page == "prompt":
-            st.info("제출이 완료되지 않았습니다. 시나리오 화면으로 돌아갑니다.")
-            time.sleep(2)
-            st.session_state.page = "scenario"
-            st.rerun()
-
-        # ✅ 모든 플레이어 제출 완료 시 → 판단 단계 전환
-        if check_all_submitted(code):
-            st.session_state.phase = "judging"
-            st.rerun()
-        else:
-            time.sleep(2)
-            st.rerun()
-
-    # 라운드 선택 UI 숨김
+    # 스타일 및 타이머 바 출력
     st.markdown("""
     <style>
-    div.stNumberInput, p:contains("진행할 라운드 수를 선택하세요"),
-    div:contains("라운드"), p:contains("라운드") {
-        display: none !important;
+    @keyframes blink {
+        0% { opacity: 1; }
+        100% { opacity: 0.4; }
+    }
+    .blinking-bar {
+        animation: blink 1s infinite alternate;
     }
     </style>
     """, unsafe_allow_html=True)
+
+    st.subheader(f"Round {current_round}")
+
+    percent = int((remaining / TIME_LIMIT) * 100)
+    blink_class = "blinking-bar" if remaining < 10 else ""
+    bar_html = f"""
+    <div style="background-color:#eee; border-radius:10px; height:20px; width:100%; margin-bottom: 20px;">
+        <div class="{blink_class}" style="
+            width:{percent}% ;
+            background-color:#ff4d4d;
+            height:100%;
+            border-radius:10px;
+            transition: width 1s linear;
+        "></div>
+    </div>
+    """
+    st.markdown(bar_html, unsafe_allow_html=True)
+    st.markdown(f"<h1 style='text-align: center; font-size: 72px; color: white;'>{remaining}</h1>", unsafe_allow_html=True)
+    st.markdown(f"<div style='margin-bottom: 12px; font-size: 18px; color: white;'>{get_text('current_situation')} {player_situation}</div>", unsafe_allow_html=True)
+
+    if "input_survive" not in st.session_state:
+        st.session_state.input_survive = {}
+
+    strategy_key = f"strategy_{current_round}_{name}"
+    strategy = st.text_area(get_text("input_strategy"), height=150, key=strategy_key)
+
+    st.markdown(f"<div style='color: red; font-weight: bold;'>{get_text('submit_warning')}</div>", unsafe_allow_html=True)
+    st.button(get_text("submit"))
+
+    if remaining == 0:
+        if not strategy.strip():
+            strategy = get_text("default_strategy")
+
+        # ✅ 전략 저장 + 제출 완료 처리
+        st.session_state.input_survive[name] = strategy
+        rooms[code]["players"][name]["strategy"] = strategy
+        rooms[code]["players"][name]["submitted"] = True
+        save_rooms(rooms)
+
+        st.session_state.page = "result"
+        st.rerun()
+
+    if remaining > 0:
+        time.sleep(1)
+        st.rerun()

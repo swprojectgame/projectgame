@@ -61,16 +61,26 @@ TRANSLATIONS = {
         "slide5_content": "라운드 후 사망 횟수가 가장 적은 플레이어가 승리합니다.",
         
         # scenario.py
-        "title_scenario": "🧠 위기 상황에 대처하세요!",
-        "current_situation": "📖 현재 상황: {situation}",
-        "action_input": "💬 당신의 행동은?",
+        "title_scenario": "어떤 상황을 연출하시겠습니까?",
+        "current_situation": "현재 상황: ",
         "submit": "제출",
-        
+        "input_label_scenario": "시나리오를 작성해주세요",
+        "notice": "타이머가 끝나면 자동으로 다음 페이지로 넘어갑니다.",
+        "recommend_button": "추천 시나리오",
+        "file_missing": "⚠️ 시나리오 파일이 존재하지 않습니다.",
+        "list_empty": "⚠️ 시나리오 리스트가 비어 있습니다.",
+        "warning_empty": "시나리오를 입력하거나 추천 시나리오를 선택해주세요.",
+        "submit_warning": "제출 버튼을 클릭해야 작성한 내용이 저장됩니다 !!!",
+
         # prompt.py
         "title_prompt": "⏳ 다른 플레이어들의 입력을 기다리는 중...",
         "waiting": "모든 플레이어의 입력을 기다리고 있습니다.",
         "judging": "판단 중···",
         "finalizing": "당신의 운명이 결정되었습니다!",
+        "error_occurred_restart": "오류가 발생했습니다. 게임을 다시 시작해주세요.",
+        "survival_strategy": "생존 전략",
+        "input_strategy": "생존 전략을 입력하세요.",
+        "default_strategy": "적절한 생존 전략을 택한다.",
         
         # result.py
         "title_result": "📢 AI의 판단 결과!",
@@ -82,6 +92,8 @@ TRANSLATIONS = {
         "survived": "생존",
         "died": "사망",
         "round_info": "라운드 {current} / {max}",
+        "back_to_lobby": "로비로 돌아가기",
+        "warning_empty": "플레이어 목록 또는 생존 전략이 없습니다.",
         
         # end.py
         "title_end": "🏁 게임 종료",
@@ -152,16 +164,26 @@ TRANSLATIONS = {
         "slide5_content": "The player with the fewest deaths after rounds wins.",
         
         # scenario.py
-        "title_scenario": "🧠 Deal with the Crisis!",
-        "current_situation": "📖 Current Situation: {situation}",
-        "action_input": "💬 What's your action?",
+        "title_scenario": "What kind of situation do you want to create?",
+        "current_situation": "Current Situation: ",
         "submit": "Submit",
-        
+        "input_label_scenario": "Please write your scenario",
+        "notice": "You will be automatically redirected when the timer runs out.",
+        "recommend_button": "Suggest a Scenario",
+        "file_missing": "⚠️ Scenario file is missing.",
+        "list_empty": "⚠️ Scenario list is empty.",
+        "warning_empty": "Please enter a scenario or select a suggested one.",
+        "submit_warning": "You must click the submit button to save your input !!!",
+
         # prompt.py
         "title_prompt": "⏳ Waiting for other players' input...",
         "waiting": "Waiting for all players to submit their actions.",
         "judging": "Judging···",
         "finalizing": "Your fate has been decided!",
+        "error_occurred_restart": "An error occurred. Please restart the game.",
+        "survival_strategy": "Survival Strategy",
+        "input_strategy": "Input your strategy to survive",
+        "default_strategy": "Choose an appropriate survival tactic.",
         
         # result.py
         "title_result": "📢 AI Judgment Result!",
@@ -173,6 +195,8 @@ TRANSLATIONS = {
         "survived": "Survived",
         "died": "Died",
         "round_info": "Round {current} / {max}",
+        "back_to_lobby": "Return to Lobby",
+        "warning_empty": "No player list or survival strategies found.",
         
         # end.py
         "title_end": "🏁 Game Over",

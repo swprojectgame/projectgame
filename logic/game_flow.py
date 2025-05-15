@@ -25,7 +25,7 @@ def generate_result(code):
     rooms = load_rooms()
     if code not in rooms:
         return None
-    
+
     players = rooms[code]["players"]
 
     # ✅ 문자열(str)일 경우도 대비해 딕셔너리로 강제 초기화
@@ -38,7 +38,7 @@ def generate_result(code):
             continue
 
         situation = player.get("situation", "")
-        scenario = player.get("scenario", "")
+        scenario = player.get("strategy", "")  # ✅ 전략은 이제 strategy 키로 저장됨
         language = st.session_state.get("language", "ko")
 
         if language == "en":
@@ -96,7 +96,8 @@ def reset_submissions(code):
         for player in rooms[code]["players"].values():
             player["submitted"] = False
             player["scenario"] = ""
-            player["situation"] = ""  # 🔥 초기화 유지
+            player["situation"] = ""
+            player["strategy"] = ""
         save_rooms(rooms)
 
 # ✅ 생존 여부 파악 및 누적

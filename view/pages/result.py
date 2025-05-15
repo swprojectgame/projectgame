@@ -10,16 +10,16 @@ def a5():
     code = st.session_state.room_code
     name = st.session_state.player_name
     rooms = load_rooms()
-    
-    # 🆕 아래 코드 추가 (result_index 아래)
-    if name != rooms[code].get("host"):
+
+    # ✅ 참여자만 페이지 이동 추적
+    if "host" in rooms[code] and name != rooms[code]["host"]:
         current_page = rooms[code].get("page")
         if current_page and current_page != "result":
             st.session_state.page = current_page
             st.rerun()
 
-    # ✅ 방장이 아닐 때만 자동 새로고침 실행
-    if name != rooms[code].get("host"):
+    # ✅ 참여자는 자동 새로고침
+    if "host" in rooms[code] and name != rooms[code]["host"]:
         st_autorefresh(interval=2000, key="auto_refresh")
 
     bg_cl()
@@ -30,7 +30,7 @@ def a5():
         st.error("세션 정보가 없습니다. 다시 시작해주세요.")
         st.stop()
 
-    # ✅ 결과가 없으면 방장이 생성
+    # ✅ 결과 없으면 방장이 생성
     if (
         "result" not in rooms[code]
         or not isinstance(rooms[code]["result"], dict)
@@ -45,7 +45,7 @@ def a5():
             st.info("AI가 판단 중입니다... 방장이 결과를 생성하면 곧 표시됩니다.")
             st.stop()
 
-    # ✅ 현재 결과 출력
+    # ✅ 결과 출력
     result_index = rooms[code].get("result_index", 0)
     result_order = rooms[code].get("result_order", [])
     result_data = rooms[code].get("result", {})
@@ -89,7 +89,7 @@ def a5():
                     assign_situation(code, new_situation)
                     reset_submissions(code)
 
-                    # ✅ 결과 제거 및 다음 라운드 준비
+                    # ✅ 다음 라운드 준비
                     rooms[code].pop("result", None)
                     rooms[code].pop("result_order", None)
                     rooms[code].pop("result_index", None)
@@ -98,9 +98,8 @@ def a5():
                     rooms[code]["page"] = "scenario"
 
                 save_rooms(rooms)
-                st.session_state.page = rooms[code]["page"]  # ✅ 세션 상태 업데이트
+                st.session_state.page = rooms[code]["page"]
                 st.rerun()
-
         else:
             page = rooms[code].get("page")
             if page:
