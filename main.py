@@ -1,39 +1,31 @@
-from view.ui.hide_bar import hide_bar_ui
-
-from view.ui.bg import bg
-
-from view.pages import start,lobby,scenario,prompf,result
-
-
 import streamlit as st
-#api
+from view.ui.hide_bar import hide_bar_ui
+from view.ui.bg import bg
+from view.pages import start, lobby, scenario, prompt, result, end, lobby2  
+from logic.url_router import handle_url_params
 
-    ##여기서 작업하세용##
+# 트랜지션 관련 페이지 이동 로직이 있다면 초기화
+handle_url_params()
 
-#logic
+# UI 요소
+hide_bar_ui()  # 상단 바 숨김
 
-    ##여기서 작업하세용##
-
-#guitar
-
-    ##여기서 작업하세용##
-
-#ui
-hide_bar_ui() # 이거는 위에 창 숨기는 전체 영역 함수
-
-#page 시작
+# 세션에 page가 없으면 시작 페이지로 설정
 if "page" not in st.session_state:
     st.session_state.page = "start"
 
+# 페이지 전환 처리
 if st.session_state.page == "start":
     start.a1()
 elif st.session_state.page == "lobby":
     lobby.a2()
+elif st.session_state.page == "lobby2":  
+    lobby2.lobby2()
 elif st.session_state.page == "scenario":
     scenario.a3()
-elif st.session_state.page == "prompf":
-    prompf.a4()
+elif st.session_state.page == "prompt":
+    prompt.a4()
 elif st.session_state.page == "result":
     result.a5()
-
-
+elif st.session_state.page == "end":
+    end.a6()
