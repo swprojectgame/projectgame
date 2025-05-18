@@ -77,7 +77,7 @@ def a5():
             st.markdown(
                 f"""
                 <div style='margin-bottom: 16px; font-size: 18px; color: #00ffff; font-weight: 500;'>
-                    <strong>{get_text("submitted_strategy")}:</strong> {strategy}
+                    <strong>{get_text("survival_strategy")}:</strong> {strategy}
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -94,7 +94,7 @@ def a5():
 
             # ✅ 다음 결과로 넘기기
             if name == rooms[code].get("host"):
-                if st.button(get_text("next_result_button")):
+                if st.button(get_text("next_round")):
                     next_result(code)
                     st.rerun()
             else:

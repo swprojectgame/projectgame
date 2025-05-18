@@ -7,7 +7,7 @@ from logic.utils import get_random_situation, SITUATIONS
 from view.language import get_text
 from streamlit_autorefresh import st_autorefresh
 
-TIME_LIMIT = 10  # 제한 시간 (초)
+TIME_LIMIT = 30  # 제한 시간 (초)
 MAX_LENGTH = 140  # 최대 글자 수 제한
 
 def a3():

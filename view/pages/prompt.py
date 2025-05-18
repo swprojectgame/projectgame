@@ -5,7 +5,7 @@ from logic.room_manager import load_rooms, save_rooms
 from view.language import get_text
 from view.ui.cleaner import clean_ui
 
-TIME_LIMIT = 10  # 제한 시간 (초)
+TIME_LIMIT = 45  # 제한 시간 (초)
 
 def a4():
     bg_cl()

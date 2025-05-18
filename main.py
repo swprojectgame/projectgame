@@ -19,8 +19,6 @@ if st.session_state.page == "start":
     start.a1()
 elif st.session_state.page == "lobby":
     lobby.a2()
-elif st.session_state.page == "lobby2":  
-    lobby2.lobby2()
 elif st.session_state.page == "scenario":
     scenario.a3()
 elif st.session_state.page == "prompt":

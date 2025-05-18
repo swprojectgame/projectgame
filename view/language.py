@@ -4,7 +4,7 @@ import streamlit as st
 TRANSLATIONS = {
     "ko": {
         # start.py
-        "title": "🎮 Death by AI - 시작화면",
+        "title": "🎮 A.M.I",
         "nickname": "닉네임을 입력하세요:",
         "create_room": "🆕 방 만들기",
         "join_room": "🔑 방 코드로 입장",
@@ -16,7 +16,7 @@ TRANSLATIONS = {
         "invalid_code": "🚫 유효하지 않은 방 코드입니다.",
         
         # lobby.py
-        "title_lobby": "🧑‍🤝‍🧑 Death by AI - 로비",
+        "title_lobby": "A.M.I - 로비",
         "settings": "⚙️ 설정",
         "language_settings": "🌐 언어 설정",
         "select_language": "언어 선택",
@@ -106,7 +106,7 @@ TRANSLATIONS = {
     },
     "en": {
         # start.py
-        "title": "🎮 Death by AI - Start Screen",
+        "title": "🎮 A.M.I",
         "nickname": "Enter your nickname:",
         "create_room": "🆕 Create Room",
         "join_room": "🔑 Join with Room Code",
@@ -118,7 +118,7 @@ TRANSLATIONS = {
         "invalid_code": "🚫 Invalid room code.",
         
         # lobby.py
-        "title_lobby": "🧑‍🤝‍🧑 Death by AI - Lobby",
+        "title_lobby": "A.M.I - Lobby",
         "settings": "⚙️ Settings",
         "language_settings": "🌐 Language Settings",
         "select_language": "Select Language",
