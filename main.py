@@ -1,7 +1,7 @@
 import streamlit as st
 from view.ui.hide_bar import hide_bar_ui
 from view.ui.bg import bg
-from view.pages import start, lobby, scenario, prompt, result, end, lobby2  
+from view.pages import start, lobby, scenario, prompt, result, end 
 from logic.url_router import handle_url_params
 
 # 트랜지션 관련 페이지 이동 로직이 있다면 초기화
